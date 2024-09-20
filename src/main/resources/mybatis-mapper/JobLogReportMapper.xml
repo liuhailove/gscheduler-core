@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.JobLogReportDao">
+
+    <resultMap id="JobLogReport" type="com.tc.gschedulercore.core.model.JobLogReport">
+        <result column="id" property="id"/>
+        <result column="job_group" property="jobGroup"/>
+        <result column="job_id" property="jobId"/>
+        <result column="job_desc" property="jobDesc"/>
+        <result column="app_name" property="appname"/>
+        <result column="env" property="env"/>
+        <result column="trigger_day" property="triggerDay"/>
+        <result column="running_count" property="runningCount"/>
+        <result column="suc_count" property="sucCount"/>
+        <result column="fail_count" property="failCount"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+		t.job_group,
+		t.job_id,
+		t.job_desc,
+		t.app_name,
+		t.env,
+		t.trigger_day,
+		t.running_count,
+		t.suc_count,
+		t.fail_count
+    </sql>
+
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.JobLogReport" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO gs_job_log_report (
+        `job_group`,
+        `job_id`,
+        `job_desc`,
+        `app_name`,
+        `env`,
+        `trigger_day`,
+        `running_count`,
+        `suc_count`,
+        `fail_count`
+        ) VALUES (
+        #{jobGroup},
+        #{jobId},
+        #{jobDesc},
+        #{appname},
+        #{env},
+        #{triggerDay},
+        #{runningCount},
+        #{sucCount},
+        #{failCount}
+        );
+        <!--<selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID()
+        </selectKey>-->
+    </insert>
+
+    <update id="update">
+        UPDATE gs_job_log_report
+        SET `running_count` = #{runningCount},
+            `suc_count`     = #{sucCount},
+            `fail_count`    = #{failCount}
+        WHERE `trigger_day` = #{triggerDay}
+          AND `job_group` = #{jobGroup}
+          AND `job_id` = #{jobId}
+    </update>
+
+    <select id="queryLogReport" resultMap="JobLogReport">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_log_report AS t
+        WHERE t.trigger_day between #{triggerDayFrom} and #{triggerDayTo} AND job_group=#{jobGroup}
+        ORDER BY t.trigger_day ASC
+    </select>
+
+    <select id="queryLogReportTotal" resultMap="JobLogReport">
+        SELECT SUM(running_count) running_count,
+               SUM(suc_count)     suc_count,
+               SUM(fail_count)    fail_count
+        FROM gs_job_log_report AS t
+    </select>
+
+    <select id="queryLogReportTotalByGroups" resultMap="JobLogReport">
+        SELECT SUM(running_count) running_count,
+        SUM(suc_count) suc_count,
+        SUM(fail_count) fail_count
+        FROM gs_job_log_report AS t
+        <if test="jobGroupList!=null and jobGroupList.size()>0 ">
+            WHERE t.job_group IN
+            <foreach collection="jobGroupList" close=")" item="groupId" open="(" separator=",">
+                #{groupId}
+            </foreach>
+        </if>
+    </select>
+
+
+</mapper>

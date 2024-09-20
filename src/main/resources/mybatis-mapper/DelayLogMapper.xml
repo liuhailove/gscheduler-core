@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.DelayLogDao">
+
+    <resultMap id="DelayLog" type="com.tc.gschedulercore.core.model.DelayLog">
+        <result column="id" property="id"/>
+        <result column="job_log_id" property="jobLogId"/>
+        <result column="job_group" property="jobGroup"/>
+        <result column="job_id" property="jobId"/>
+        <result column="job_name" property="jobName"/>
+        <result column="alarm_status" property="alarmStatus"/>
+        <result column="log_date" property="logDate"/>
+        <result column="start_executor_date" property="startExecutorDate"/>
+        <result column="start_executor_tolerance_threshold_in_min" property="startExecutorToleranceThresholdInMin"/>
+        <result column="time_elapse_in_ms" property="timeElapseInMs"/>
+        <result column="address" property="address"/>
+        <result column="add_time" property="addTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+        t.job_log_id,
+		t.job_group,
+		t.job_id,
+		t.job_name,
+		t.alarm_status,
+		t.log_date,
+		t.start_executor_date,
+		t.start_executor_tolerance_threshold_in_min,
+		t.time_elapse_in_ms,
+		t.address,
+		t.add_time,
+		t.update_time
+    </sql>
+
+    <select id="pageList" resultMap="DelayLog">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_delay_log AS t
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="jobGroups!=null and jobGroups.size()>0">
+                AND t.job_group IN
+                <foreach collection="jobGroups" close=")" item="id" open="(" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="jobGroup gt 0">
+                AND t.job_group = #{jobGroup}
+            </if>
+            <if test="jobId gt 0">
+                AND t.job_id = #{jobId}
+            </if>
+            <if test="logId gt 0">
+                AND t.job_log_id = #{logId}
+            </if>
+            <if test="triggerTimeStart != null">
+                AND t.log_date <![CDATA[ >= ]]> #{triggerTimeStart}
+            </if>
+            <if test="triggerTimeEnd != null">
+                AND t.log_date <![CDATA[ <= ]]> #{triggerTimeEnd}
+            </if>
+        </trim>
+        ORDER BY t.add_time DESC
+        LIMIT #{offset}, #{pagesize}
+    </select>
+
+    <select id="pageListCount" resultType="int">
+        SELECT count(1)
+        FROM gs_delay_log AS t
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="jobGroups!=null and jobGroups.size()>0">
+                AND t.job_group IN
+                <foreach collection="jobGroups" close=")" item="id" open="(" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="jobGroup gt 0">
+                AND t.job_group = #{jobGroup}
+            </if>
+            <if test="jobId gt 0">
+                AND t.job_id = #{jobId}
+            </if>
+            <if test="logId gt 0">
+                AND t.job_log_id = #{logId}
+            </if>
+            <if test="triggerTimeStart != null">
+                AND t.log_date <![CDATA[ >= ]]> #{triggerTimeStart}
+            </if>
+            <if test="triggerTimeEnd != null">
+                AND t.log_date <![CDATA[ <= ]]> #{triggerTimeEnd}
+            </if>
+        </trim>
+    </select>
+
+    <select id="load" parameterType="java.util.HashMap" resultMap="DelayLog">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_delay_log AS t
+        WHERE t.id = #{id}
+    </select>
+
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.DelayLog" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO gs_delay_log (`job_log_id`,
+                                  `job_group`,
+                                  `job_id`,
+                                  `job_name`,
+                                  `alarm_status`,
+                                  `log_date`,
+                                  `start_executor_date`,
+                                  `start_executor_tolerance_threshold_in_min`,
+                                  `time_elapse_in_ms`,
+                                  `address`,
+                                  `add_time`,
+                                  `update_time`)
+        VALUES (#{jobLogId},
+                #{jobGroup},
+                #{jobId},
+                #{jobName},
+                #{alarmStatus},
+                #{logDate},
+                #{startExecutorDate},
+                #{startExecutorToleranceThresholdInMin},
+                #{timeElapseInMs},
+                #{address},
+                #{addTime},
+                #{updateTime})
+    </insert>
+
+    <update id="updateAlarmStatus">
+        UPDATE gs_delay_log
+        SET `alarm_status` = #{newAlarmStatus}
+        WHERE `id` = #{id}
+          AND `alarm_status` = #{oldAlarmStatus}
+          AND `job_group` = #{jobGroup}
+    </update>
+</mapper>

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.AlarmScriptDao">
+
+    <resultMap id="AlarmScript" type="com.tc.gschedulercore.core.model.AlarmScript">
+        <result column="id" property="id"/>
+        <result column="alarm_rule_id" property="alarmRuleId"/>
+        <result column="job_group" property="jobGroup"/>
+        <result column="script_name" property="scriptName"/>
+        <result column="alarm_check_exp" property="alarmCheckExp"/>
+        <result column="alarm_msg_exp" property="alarmMsgExp"/>
+        <result column="cron_exp" property="cronExp"/>
+        <result column="retry_type" property="retryType"/>
+        <result column="trigger_last_time" property="triggerLastTime"/>
+        <result column="trigger_next_time" property="triggerNextTime"/>
+        <result column="script_retry_conf" property="scriptRetryConf"/>
+        <result column="script_retry_count" property="scriptRetryCount"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="gmt_modified" property="gmtModified"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+        t.alarm_rule_id,
+		t.job_group,
+        t.script_name,
+		t.alarm_check_exp,
+ 		t.alarm_msg_exp,
+		t.cron_exp,
+        t.retry_type,
+        t.script_retry_conf,
+        t.script_retry_count,
+        t.trigger_last_time,
+        t.trigger_next_time,
+		t.gmt_create,
+        t.gmt_modified
+    </sql>
+
+
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.AlarmScript" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO gs_alarm_script_tab (`alarm_rule_id`, `job_group`, `script_name`, `alarm_check_exp`,
+                                         `alarm_msg_exp`,
+                                         `cron_exp`, `retry_type`, `script_retry_conf`, `script_retry_count`,
+                                         `gmt_create`, `gmt_modified`)
+        values (#{alarmRuleId}, #{jobGroup}, #{scriptName}, #{alarmCheckExp}, #{alarmMsgExp}, #{cronExp},
+                #{retryType}, #{scriptRetryConf}, #{scriptRetryCount}, #{gmtCreate}, #{gmtModified})
+    </insert>
+
+    <update id="update" parameterType="com.tc.gschedulercore.core.model.AlarmScript">
+        UPDATE gs_alarm_script_tab
+        SET `alarm_rule_id`      = #{alarmRuleId},
+            `job_group`          = #{jobGroup},
+            `script_name`        = #{scriptName},
+            `alarm_check_exp`    = #{alarmCheckExp},
+            `alarm_msg_exp`      = #{alarmMsgExp},
+            `cron_exp`           = #{cronExp},
+            `script_retry_conf`  = #{scriptRetryConf},
+            `retry_type`         = #{retryType},
+            `script_retry_count` = #{scriptRetryCount},
+            `gmt_modified`       = #{gmtModified}
+        WHERE id = #{id}
+    </update>
+
+
+    <select id="pageList" parameterType="java.util.HashMap" resultMap="AlarmScript">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_alarm_script_tab AS t
+        WHERE t.alarm_rule_id = #{alarmRuleId}
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="pageListCount" parameterType="java.util.HashMap" resultType="int">
+        SELECT count(1)
+        FROM gs_alarm_script_tab AS t
+        WHERE t.alarm_rule_id = #{alarmRuleId}
+    </select>
+
+
+    <delete id="remove" parameterType="java.util.HashMap">
+        DELETE
+        FROM gs_alarm_script_tab
+        WHERE id = #{id}
+    </delete>
+
+    <select id="existBy" parameterType="java.util.HashMap" resultType="java.lang.Boolean">
+        SELECT count(1)
+        FROM gs_alarm_script_tab AS t
+        WHERE t.alarm_rule_id = #{alarmRuleId}
+          AND t.script_name = #{scriptName}
+    </select>
+
+    <select id="load" parameterType="java.lang.Long" resultMap="AlarmScript">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_alarm_script_tab AS t
+        WHERE t.id = #{id}
+    </select>
+
+    <select id="queryBy" parameterType="java.lang.Long" resultMap="AlarmScript">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_alarm_script_tab AS t
+        WHERE t.alarm_rule_id = #{alarmRuleId}
+    </select>
+
+    <delete id="removeBy" parameterType="java.util.HashMap">
+        DELETE
+        FROM gs_alarm_script_tab
+        WHERE alarm_rule_id = #{alarmRuleId}
+    </delete>
+
+    <select id="queryByTime" parameterType="java.util.HashMap" resultMap="AlarmScript">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_alarm_script_tab AS t
+        WHERE  t.retry_type=4
+        and t.trigger_next_time <![CDATA[ <= ]]> #{maxNextTime}
+        ORDER BY id ASC
+        LIMIT #{pagesize}
+    </select>
+
+    <update id="updateTriggerNextTime" parameterType="com.tc.gschedulercore.core.model.AlarmScript">
+        UPDATE gs_alarm_script_tab
+        SET `trigger_next_time`      = #{triggerNextTime}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateTriggerTimeById" parameterType="com.tc.gschedulercore.core.model.AlarmScript">
+        UPDATE gs_alarm_script_tab
+        SET `trigger_next_time`      = #{triggerNextTime},
+            `trigger_last_time`      = #{triggerLastTime}
+        WHERE id = #{id}
+    </update>
+</mapper>

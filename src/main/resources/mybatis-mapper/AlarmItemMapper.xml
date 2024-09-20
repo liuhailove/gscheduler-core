@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.AlarmItemDao">
+
+    <resultMap id="AlarmItem" type="com.tc.gschedulercore.core.model.AlarmItem">
+        <result column="id" property="id"/>
+        <result column="alarm_rule_id" property="alarmRuleId"/>
+        <result column="resource_type" property="resourceType"/>
+        <result column="alarm_type" property="alarmType"/>
+        <result column="check_period_in_min" property="checkPeriodInMin"/>
+        <result column="effect_type" property="effectType"/>
+        <result column="observation_val" property="observationVal"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="gmt_modified" property="gmtModified"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+		t.alarm_rule_id,
+		t.resource_type,
+ 		t.alarm_type,
+		t.check_period_in_min,
+		t.effect_type,
+        t.observation_val,
+		t.gmt_create,
+        t.gmt_modified
+    </sql>
+
+
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.AlarmItem" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO gs_alarm_item_tab (`alarm_rule_id`, `resource_type`, `alarm_type`, `check_period_in_min`,
+                                       `effect_type`,
+                                       `observation_val`, `gmt_create`, `gmt_modified`)
+        values (#{alarmRuleId}, #{resourceType}, #{alarmType}, #{checkPeriodInMin}, #{effectType},
+                #{observationVal}, #{gmtCreate}, #{gmtModified})
+    </insert>
+
+    <update id="update" parameterType="com.tc.gschedulercore.core.model.AlarmItem">
+        UPDATE gs_alarm_item_tab
+        SET `alarm_rule_id`       = #{alarmRuleId},
+            `resource_type`       = #{resourceType},
+            `alarm_type`          = #{alarmType},
+            `check_period_in_min` = #{checkPeriodInMin},
+            `effect_type`         = #{effectType},
+            `observation_val`     = #{observationVal},
+            `gmt_modified`        = #{gmtModified}
+        WHERE id = #{id}
+    </update>
+
+
+    <select id="pageList" parameterType="java.util.HashMap" resultMap="AlarmItem">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_alarm_item_tab AS t
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="alarmRuleId != null">
+                AND t.alarm_rule_id = #{alarmRuleId}
+            </if>
+        </trim>
+        ORDER BY t.id DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="pageListCount" parameterType="java.util.HashMap" resultType="int">
+        SELECT count(1)
+        FROM gs_alarm_item_tab AS t
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="alarmRuleId != null">
+                AND t.alarm_rule_id = #{alarmRuleId}
+            </if>
+        </trim>
+    </select>
+
+
+    <delete id="remove" parameterType="java.util.HashMap">
+        DELETE
+        FROM gs_alarm_item_tab
+        WHERE id = #{id}
+    </delete>
+
+    <delete id="removeBy" parameterType="java.util.HashMap">
+        DELETE
+        FROM gs_alarm_item_tab
+        WHERE alarm_rule_id = #{alarmRuleId}
+    </delete>
+
+    <select id="queryByAlarmRule" parameterType="java.util.HashMap" resultMap="AlarmItem">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_alarm_item_tab AS t
+        WHERE t.alarm_rule_id =#{alarmRuleId}
+    </select>
+
+    <select id="load" parameterType="java.lang.Long" resultMap="AlarmItem">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_alarm_item_tab AS t
+        WHERE t.id = #{id}
+    </select>
+
+
+    <select id="existBy" parameterType="java.util.HashMap" resultType="java.lang.Boolean">
+        SELECT count(1)
+        FROM gs_alarm_item_tab AS t
+        WHERE t.alarm_rule_id = #{alarmRuleId}
+          AND t.resource_type = #{resourceType}
+          AND t.alarm_type = #{alarmType}
+    </select>
+
+</mapper>

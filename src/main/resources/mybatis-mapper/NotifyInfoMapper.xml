@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.NotifyInfoDao">
+
+    <resultMap id="NotifyInfo" type="com.tc.gschedulercore.core.model.NotifyInfo">
+        <result column="id" property="id"/>
+        <result column="app" property="app"/>
+        <result column="alarm_rule_id" property="alarmRuleId"/>
+        <result column="alarm_name" property="alarmName"/>
+        <result column="alarm_level" property="alarmLevel"/>
+        <result column="alarm_type" property="alarmType"/>
+        <result column="notify_content" property="notifyContent"/>
+        <result column="notify_url" property="notifyUrl"/>
+        <result column="notify_users" property="notifyUsers"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="log_id" property="logId"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+		t.app,
+		t.alarm_rule_id,
+		t.alarm_name,
+		t.alarm_level,
+		t.alarm_type,
+		t.notify_content,
+        t.notify_url,
+        t.notify_users,
+		t.gmt_create,
+        t.log_id
+    </sql>
+
+
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.NotifyInfo" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO gs_notify_info_tab (`app`, `alarm_rule_id`, `alarm_name`, `alarm_level`,`alarm_type`,
+                                        `notify_content`, `notify_url`, `notify_users`,`gmt_create`,`log_id`)
+        values (#{app}, #{alarmRuleId}, #{alarmName}, #{alarmLevel}, #{alarmType},
+                #{notifyContent}, #{notifyUrl}, #{notifyUsers}, #{gmtCreate},#{logId})
+    </insert>
+
+    <select id="pageList" parameterType="java.util.HashMap" resultMap="NotifyInfo">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_notify_info_tab AS t
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="app != null and app != ''">
+                AND t.app = #{app}
+            </if>
+            <if test="alarmName != null and alarmName != ''">
+                AND t.alarm_name like CONCAT(CONCAT('%', #{alarmName}), '%')
+            </if>
+            <if test="alarmLevel != null">
+                AND t.alarm_level =#{alarmLevel}
+            </if>
+            <if test="alarmType != null">
+                AND t.alarm_type =#{alarmType}
+            </if>
+            <if test="alarmStartTime != null">
+                AND t.gmt_create <![CDATA[ >= ]]> #{alarmStartTime}
+            </if>
+            <if test="alarmEndTime != null">
+                AND t.gmt_create <![CDATA[ <= ]]> #{alarmEndTime}
+            </if>
+            <if test="permissionApps!=null and permissionApps.size()>0">
+                AND t.app IN
+                <foreach collection="permissionApps" close=")" item="app" open="(" separator=",">
+                    #{app}
+                </foreach>
+            </if>
+        </trim>
+        ORDER BY t.app,t.id DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="pageListCount" parameterType="java.util.HashMap" resultType="int">
+        SELECT count(1)
+        FROM gs_notify_info_tab AS t
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="app != null and app != ''">
+                AND t.app = #{app}
+            </if>
+            <if test="alarmName != null and alarmName != ''">
+                AND t.alarm_name like CONCAT(CONCAT('%', #{alarmName}), '%')
+            </if>
+            <if test="alarmLevel != null">
+                AND t.alarm_level =#{alarmLevel}
+            </if>
+            <if test="alarmType != null">
+                AND t.alarm_type =#{alarmType}
+            </if>
+            <if test="alarmStartTime != null">
+                AND t.gmt_create <![CDATA[ >= ]]> #{alarmStartTime}
+            </if>
+            <if test="alarmEndTime != null">
+                AND t.gmt_create <![CDATA[ <= ]]> #{alarmEndTime}
+            </if>
+            <if test="permissionApps!=null and permissionApps.size()>0">
+                AND t.app IN
+                <foreach collection="permissionApps" close=")" item="app" open="(" separator=",">
+                    #{app}
+                </foreach>
+            </if>
+        </trim>
+    </select>
+
+
+    <delete id="remove" parameterType="java.util.HashMap">
+        DELETE
+        FROM gs_notify_info_tab
+        WHERE id = #{id}
+    </delete>
+
+    <select id="load" parameterType="java.lang.Long" resultMap="NotifyInfo">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_notify_info_tab AS t
+        WHERE t.id = #{id}
+    </select>
+
+</mapper>

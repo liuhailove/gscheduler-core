@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.JobLogTagDao">
+
+    <resultMap id="JobLogTag" type="com.tc.gschedulercore.core.model.JobLogTag">
+        <result column="id" property="id"/>
+        <result column="tag_name" property="tagName"/>
+        <result column="tag_desc" property="tagDesc"/>
+        <result column="app_name" property="appName"/>
+        <result column="author" property="author"/>
+        <result column="add_time" property="addTime"/>
+        <result column="update_time" property="updateTime"/>
+
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+		t.tag_name,
+		t.tag_desc,
+		t.app_name,
+		t.author,
+        t.add_time,
+        t.update_time
+    </sql>
+
+    <select id="pageList" parameterType="java.util.HashMap" resultMap="JobLogTag">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_log_tag AS t
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="appName != null and appName != ''">
+                AND t.app_name like CONCAT(CONCAT('%', #{appName}), '%')
+            </if>
+            <if test="tagName != null and tagName != ''">
+                AND t.tag_name like CONCAT(CONCAT('%', #{tagName}), '%')
+            </if>
+            <if test="appNames!=null and appNames.size()>0">
+                AND t.app_name IN
+                <foreach collection="appNames" close=")" item="app" open="(" separator=",">
+                    #{app}
+                </foreach>
+            </if>
+        </trim>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{pagesize}
+    </select>
+
+    <select id="pageListCount" parameterType="java.util.HashMap" resultType="int">
+        SELECT count(1)
+        FROM gs_job_log_tag AS t
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="appNames != null and appNames != ''">
+                AND t.app_name like CONCAT(CONCAT('%', #{appName}), '%')
+            </if>
+            <if test="tagName != null and tagName != ''">
+                AND t.tag_name like CONCAT(CONCAT('%', #{tagName}), '%')
+            </if>
+            <if test="appNames!=null and appNames.size()>0">
+                AND t.app_name IN
+                <foreach collection="appNames" close=")" item="app" open="(" separator=",">
+                    #{app}
+                </foreach>
+            </if>
+        </trim>
+    </select>
+
+    <select id="load" parameterType="java.util.HashMap" resultMap="JobLogTag">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_log_tag AS t
+        WHERE t.id = #{id}
+    </select>
+
+
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.JobLogTag" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO gs_job_log_tag (tag_name,
+                                    tag_desc,
+                                    app_name,
+                                    author,
+                                    add_time,
+                                    update_time)
+        VALUES (#{tagName},
+                #{tagDesc},
+                #{appName},
+                #{author},
+                #{addTime},
+                #{updateTime});
+    </insert>
+
+    <update id="update" parameterType="com.tc.gschedulercore.core.model.JobLogTag">
+        UPDATE gs_job_log_tag
+        SET
+        tag_name = #{tagName},
+        <if test="tagDesc != null and tagDesc != ''">
+            tag_desc = #{tagDesc},
+        </if>
+        <if test="author != null and author != ''">
+            author = #{author},
+        </if>
+        app_name = #{appName},
+        update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.util.HashMap">
+        DELETE
+        FROM gs_job_log_tag
+        WHERE id = #{id}
+    </delete>
+
+    <select id="exist" parameterType="java.util.HashMap" resultType="java.lang.Boolean">
+        SELECT count(1)
+        FROM gs_job_log_tag AS t
+        WHERE t.app_name = #{appName}
+          AND t.tag_name = #{tagName}
+    </select>
+    <select id="loadAll" parameterType="java.util.HashMap" resultMap="JobLogTag">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_log_tag AS t
+        WHERE t.app_name = #{appName}
+    </select>
+
+</mapper>

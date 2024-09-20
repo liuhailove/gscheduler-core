@@ -36,18 +36,6 @@ public class TelJobAlarm implements JobAlarm {
      */
     private static final String PRE_TEL = "86";
 
-    @Value("${spring.profiles.spx.taskid}")
-    private Integer taskid;
-
-    @Value("${spring.profiles.spx.url}")
-    private String spxUrl;
-
-    @Value("${spring.profiles.spx.sdu}")
-    private String sdu;
-
-    @Value("${spring.profiles.spx.servicekey}")
-    private String servicekey;
-
     /**
      * job alarm
      *
@@ -58,29 +46,29 @@ public class TelJobAlarm implements JobAlarm {
      */
     @Override
     public boolean doAlarm(JobInfo info, JobLog jobLog, String env) {
-        String tels = info.getVoiceAlarmTels();
-        if (!StringUtils.hasLength(tels)) {
-            LOGGER.info("Voice Alarm tel is null, jobName={},jobLogId={},tel={}", info.getJobName(), jobLog.getId(), tels);
-            return true;
-        }
-        // 触发电话告警，如果任务信息正确，并且任务配置了电话告警，每一个电话都合法
-        String[] phoneNumbers = tels.split(",");
-        for (String phoneNumber : phoneNumbers) {
-            if (!TelUtils.isValidPhoneNumber(phoneNumber)) {
-                LOGGER.error("Voice Alarm not invalid phoneNumber: {}", phoneNumber);
-                continue;
-            }
-            LOGGER.info("Voice Alarm begin: jobName:{},tel:{}", info.getJobName(), tels);
-            phoneNumber = PRE_TEL + phoneNumber;
-            //拼接请求体
-            TelParam telParam = TelParam.buildTelParam(taskid, phoneNumber, env, info.getJobName());
-            Map<String, String> additionalProperties = new HashMap<>(2);
-            additionalProperties.put("x-sp-sdu", sdu);
-            additionalProperties.put("x-sp-servicekey", servicekey);
-            ReturnT<String> result = JobRemotingUtil.postBody(spxUrl, null, JobAdminConfig.getAdminConfig().getProxyAddr(), 30, telParam, String.class, additionalProperties);
-            //打印响应
-            LOGGER.debug("Voice Alarm Response={}, jobName={},logId={},tels={}", result, info.getJobName(), jobLog.getId(), tels);
-        }
+//        String tels = info.getVoiceAlarmTels();
+//        if (!StringUtils.hasLength(tels)) {
+//            LOGGER.info("Voice Alarm tel is null, jobName={},jobLogId={},tel={}", info.getJobName(), jobLog.getId(), tels);
+//            return true;
+//        }
+//        // 触发电话告警，如果任务信息正确，并且任务配置了电话告警，每一个电话都合法
+//        String[] phoneNumbers = tels.split(",");
+//        for (String phoneNumber : phoneNumbers) {
+//            if (!TelUtils.isValidPhoneNumber(phoneNumber)) {
+//                LOGGER.error("Voice Alarm not invalid phoneNumber: {}", phoneNumber);
+//                continue;
+//            }
+//            LOGGER.info("Voice Alarm begin: jobName:{},tel:{}", info.getJobName(), tels);
+//            phoneNumber = PRE_TEL + phoneNumber;
+//            //拼接请求体
+//            TelParam telParam = TelParam.buildTelParam(taskid, phoneNumber, env, info.getJobName());
+//            Map<String, String> additionalProperties = new HashMap<>(2);
+//            additionalProperties.put("x-sp-sdu", sdu);
+//            additionalProperties.put("x-sp-servicekey", servicekey);
+//            ReturnT<String> result = JobRemotingUtil.postBody(spxUrl, null, JobAdminConfig.getAdminConfig().getProxyAddr(), 30, telParam, String.class, additionalProperties);
+//            //打印响应
+//            LOGGER.debug("Voice Alarm Response={}, jobName={},logId={},tels={}", result, info.getJobName(), jobLog.getId(), tels);
+//        }
         return true;
     }
 
@@ -162,35 +150,35 @@ public class TelJobAlarm implements JobAlarm {
      */
     @Override
     public boolean doNotifyAlarm(NotifyInfo notifyInfo, String env) {
-        if (!AlarmRule.SEVERITY_LEVEL.equals(notifyInfo.getAlarmLevel())) {
-            return true;
-        }
-        AlarmRule alarmRule = JobAdminConfig.getAdminConfig().getAlarmRuleDao().load(notifyInfo.getAlarmRuleId());
-        if (alarmRule == null) {
-            return true;
-        }
-        String tels = alarmRule.getVoiceAlarmTels();
-        if (!StringUtils.hasLength(tels)) {
-            LOGGER.info("[doNotifyAlarm] Voice Alarm tel is null,alarmName={},notifyId={},tels={}", notifyInfo.getAlarmName(), notifyInfo.getId(), tels);
-            return true;
-        }
-        // 触发电话告警，如果任务信息正确，并且任务配置了电话告警，每一个电话都合法
-        String[] phoneNumbers = tels.split(",");
-        for (String phoneNumber : phoneNumbers) {
-            if (!TelUtils.isValidPhoneNumber(phoneNumber)) {
-                LOGGER.error("[doNotifyAlarm] Voice Alarm not invalid phoneNumber: {}", phoneNumber);
-                continue;
-            }
-            phoneNumber = PRE_TEL + phoneNumber;
-            //拼接请求体
-            TelParam telParam = TelParam.buildTelParam(taskid, phoneNumber, env, notifyInfo.getAlarmName());
-            Map<String, String> additionalProperties = new HashMap<>(2);
-            additionalProperties.put("x-sp-sdu", sdu);
-            additionalProperties.put("x-sp-servicekey", servicekey);
-            ReturnT result = JobRemotingUtil.postBody(spxUrl, null, JobAdminConfig.getAdminConfig().getProxyAddr(), 30, telParam, String.class, additionalProperties);
-            //打印响应
-            LOGGER.debug("Voice Alarm Response={}, alarmName={},notifyId={},tels={}", result, notifyInfo.getAlarmName(), notifyInfo.getId(), tels);
-        }
+//        if (!AlarmRule.SEVERITY_LEVEL.equals(notifyInfo.getAlarmLevel())) {
+//            return true;
+//        }
+//        AlarmRule alarmRule = JobAdminConfig.getAdminConfig().getAlarmRuleDao().load(notifyInfo.getAlarmRuleId());
+//        if (alarmRule == null) {
+//            return true;
+//        }
+//        String tels = alarmRule.getVoiceAlarmTels();
+//        if (!StringUtils.hasLength(tels)) {
+//            LOGGER.info("[doNotifyAlarm] Voice Alarm tel is null,alarmName={},notifyId={},tels={}", notifyInfo.getAlarmName(), notifyInfo.getId(), tels);
+//            return true;
+//        }
+//        // 触发电话告警，如果任务信息正确，并且任务配置了电话告警，每一个电话都合法
+//        String[] phoneNumbers = tels.split(",");
+//        for (String phoneNumber : phoneNumbers) {
+//            if (!TelUtils.isValidPhoneNumber(phoneNumber)) {
+//                LOGGER.error("[doNotifyAlarm] Voice Alarm not invalid phoneNumber: {}", phoneNumber);
+//                continue;
+//            }
+//            phoneNumber = PRE_TEL + phoneNumber;
+//            //拼接请求体
+//            TelParam telParam = TelParam.buildTelParam(taskid, phoneNumber, env, notifyInfo.getAlarmName());
+//            Map<String, String> additionalProperties = new HashMap<>(2);
+//            additionalProperties.put("x-sp-sdu", sdu);
+//            additionalProperties.put("x-sp-servicekey", servicekey);
+//            ReturnT result = JobRemotingUtil.postBody(spxUrl, null, JobAdminConfig.getAdminConfig().getProxyAddr(), 30, telParam, String.class, additionalProperties);
+//            //打印响应
+//            LOGGER.debug("Voice Alarm Response={}, alarmName={},notifyId={},tels={}", result, notifyInfo.getAlarmName(), notifyInfo.getId(), tels);
+//        }
         return true;
     }
 

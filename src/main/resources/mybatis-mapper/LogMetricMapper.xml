@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.LogMetricDao">
+
+    <resultMap id="LogMetric" type="com.tc.gschedulercore.core.model.LogMetric">
+        <result column="id" property="id"/>
+        <result column="job_log_id" property="jobLogId"/>
+        <result column="job_id" property="jobId"/>
+        <result column="ts" property="ts"/>
+        <result column="msg" property="msg"/>
+        <result column="key1" property="key1"/>
+        <result column="value1" property="value1"/>
+        <result column="key2" property="key2"/>
+        <result column="value2" property="value2"/>
+        <result column="key3" property="key3"/>
+        <result column="value3" property="value3"/>
+        <result column="add_time" property="addTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+        t.job_log_id,
+		t.ts,
+		t.msg,
+		t.key1,
+		t.value1,
+		t.key2,
+		t.value2,
+		t.key3,
+		t.value3,
+		t.add_time,
+        t.job_id
+    </sql>
+
+    <select id="findBy" parameterType="java.util.HashMap" resultMap="LogMetric">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_log_metrics AS t
+        WHERE t.job_log_id = #{jobLogId} AND t.job_id =#{jobId}
+        ORDER BY t.id DESC
+    </select>
+
+    <select id="findLatestBy" parameterType="java.util.HashMap" resultMap="LogMetric">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_log_metrics AS t
+        WHERE t.job_log_id = #{jobLogId} AND t.job_id =#{jobId}
+        ORDER BY t.id DESC
+        LIMIT 1
+    </select>
+
+    <select id="findClearLogMetricsIds" resultType="long">
+        SELECT id FROM gs_log_metrics
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="clearBeforeTime != null">
+                AND add_time <![CDATA[ <= ]]> #{clearBeforeTime}
+            </if>
+            <if test="jobId != null">
+                AND job_id = #{jobId}
+            </if>
+        </trim>
+        LIMIT #{pagesize}
+    </select>
+
+    <delete id="clearLog">
+        delete from gs_log_metrics
+        WHERE
+        job_id = #{jobId} AND
+        id in
+        <foreach collection="logMetricsIds" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </delete>
+
+
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.LogMetric" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO gs_log_metrics (`job_log_id`,
+                                    `job_id`,
+                                    `ts`,
+                                    `msg`,
+                                    `key1`,
+                                    `value1`,
+                                    `key2`,
+                                    `value2`,
+                                    `key3`,
+                                    `value3`,
+                                    `add_time`)
+        VALUES (#{jobLogId},
+                #{jobId},
+                #{ts},
+                #{msg},
+                #{key1},
+                #{value1},
+                #{key2},
+                #{value2},
+                #{key3},
+                #{value3},
+                #{addTime})
+    </insert>
+
+    <delete id="delete">
+        delete
+        from gs_log_metrics
+        WHERE `id` = #{id}
+    </delete>
+
+    <delete id="deleteBy">
+        delete
+        from gs_log_metrics
+        WHERE `job_log_id` = #{jobLogId}
+    </delete>
+
+<!--    <select id="findByLoges" parameterType="java.util.HashMap" resultMap="LogMetric">-->
+<!--        SELECT-->
+<!--        <include refid="Base_Column_List"/>-->
+<!--        FROM gs_log_metrics AS t-->
+<!--        WHERE-->
+<!--        t.job_log_id IN-->
+<!--        <foreach collection="jobLogIdes" close=")" item="jobLogId" open="(" separator=",">-->
+<!--            ${jobLogId}-->
+<!--        </foreach>-->
+<!--    </select>-->
+
+    <select id="findByLoges" parameterType="java.util.Map" resultMap="LogMetric">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_log_metrics AS t
+        WHERE
+        t.job_log_id IN
+        <foreach collection="jobLogIdes" close=")" item="jobLogId" open="(" separator=",">
+            ${jobLogId}
+        </foreach>
+        LIMIT #{offset}, #{limit}
+    </select>
+</mapper>

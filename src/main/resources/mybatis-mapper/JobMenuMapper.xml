@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.JobMenuDao">
+
+    <resultMap id="JobMenu" type="com.tc.gschedulercore.core.model.JobMenu">
+        <result column="id" property="id"/>
+        <result column="menu_name" property="menuName"/>
+        <result column="href" property="href"/>
+        <result column="title" property="title"/>
+        <result column="icon" property="icon"/>
+        <result column="image" property="image"/>
+        <result column="target" property="target"/>
+        <result column="parent" property="parent"/>
+        <result column="operator" property="operator"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+		t.menu_name,
+		t.href,
+        t.title,
+		t.icon,
+		t.image,
+        t.target,
+		t.parent,
+		t.operator
+    </sql>
+
+    <select id="findPage" parameterType="java.util.HashMap" resultMap="JobMenu">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_menu AS t
+        ORDER BY id ASC
+        LIMIT #{offset}, #{pagesize}
+    </select>
+
+    <select id="findAllCount" parameterType="java.util.HashMap" resultType="int">
+        SELECT count(1)
+        FROM gs_job_menu AS t
+    </select>
+
+    <select id="loadByName" parameterType="java.util.HashMap" resultMap="JobMenu">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_menu AS t
+        WHERE t.menu_name = #{name}
+    </select>
+
+    <select id="load" parameterType="java.util.HashMap" resultMap="JobMenu">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_menu AS t
+        WHERE t.id = #{id}
+    </select>
+
+    <select id="loads" parameterType="java.util.HashMap" resultMap="JobMenu">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_menu AS t
+        WHERE
+        t.menu_name IN
+        <foreach collection="names" close=")" item="name" open="(" separator=",">
+            #{name}
+        </foreach>
+        AND t.operator=0
+        order by t.id asc
+    </select>
+    <select id="loadsAll" parameterType="java.util.HashMap" resultMap="JobMenu">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_menu AS t
+        WHERE
+        t.operator=0
+        order by t.id asc
+    </select>
+
+    <select id="loadOps" parameterType="java.util.HashMap" resultMap="JobMenu">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_menu AS t
+        WHERE
+        t.menu_name IN
+        <foreach collection="names" close=")" item="name" open="(" separator=",">
+            #{name}
+        </foreach>
+        AND t.operator=1
+        <if test="parent!=null">
+            AND t.parent=#{parent}
+        </if>
+        <if test="parent==null">
+            AND t.parent IS NULL
+        </if>
+        order by t.id asc
+    </select>
+    <select id="loadAllOps" parameterType="java.util.HashMap" resultMap="JobMenu">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_menu AS t
+        WHERE
+        t.operator=1
+        order by t.id asc
+    </select>
+
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.JobMenu" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO gs_job_menu (menu_name,
+                                 href,
+                                 title,
+                                 icon,
+                                 image,
+                                 target,
+                                 parent,
+                                 operator)
+        VALUES (#{menuName},
+                #{href},
+                #{title},
+                #{icon},
+                #{image},
+                #{target},
+                #{parent},
+                #{operator});
+    </insert>
+
+    <update id="update" parameterType="com.tc.gschedulercore.core.model.JobMenu">
+        UPDATE gs_job_menu
+        SET href     = #{href},
+            title    = #{title},
+            icon     = #{icon},
+            image    = #{image},
+            target   = #{target},
+            parent   = #{parent},
+            operator = #{operator}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.util.HashMap">
+        DELETE
+        FROM gs_job_menu
+        WHERE id = #{id}
+    </delete>
+
+</mapper>

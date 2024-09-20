@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.OpenApiDao">
+
+    <resultMap id="OpenApi" type="com.tc.gschedulercore.core.model.OpenApi">
+        <result column="id" property="id"/>
+        <result column="api_name" property="apiName"/>
+        <result column="urls" property="urls"/>
+        <result column="api_desc" property="apiDesc"/>
+        <result column="job_group" property="jobGroup"/>
+        <result column="job_group_name" property="jobGroupName"/>
+        <result column="access_token" property="accessToken"/>
+        <result column="author" property="author"/>
+        <result column="add_time" property="addTime"/>
+        <result column="update_time" property="updateTime"/>
+
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+		t.api_name,
+		t.urls,
+		t.api_desc,
+		t.job_group,
+        t.job_group_name,
+		t.access_token,
+		t.author,
+        t.add_time,
+        t.update_time
+    </sql>
+
+    <select id="pageList" parameterType="java.util.HashMap" resultMap="OpenApi">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_open_api AS t
+        ORDER BY id DESC
+        LIMIT #{offset}, #{pagesize}
+    </select>
+
+    <select id="pageListCount" parameterType="java.util.HashMap" resultType="int">
+        SELECT count(1)
+        FROM gs_open_api AS t
+    </select>
+
+    <select id="load" parameterType="java.util.HashMap" resultMap="OpenApi">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_open_api AS t
+        WHERE t.id = #{id}
+    </select>
+
+    <select id="loadByIdes" parameterType="java.util.HashMap" resultMap="OpenApi">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_open_api AS t
+        WHERE t.id IN
+        <foreach collection="ides" close=")" item="id" open="(" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="loadByAccessToken" parameterType="java.util.HashMap" resultMap="OpenApi">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_open_api AS t
+        WHERE t.access_token = #{accessToken}
+    </select>
+    <select id="existByAccessToken" parameterType="java.util.HashMap" resultType="java.lang.Boolean">
+        SELECT count(1)
+        FROM gs_open_api AS t
+        WHERE t.access_token = #{accessToken}
+    </select>
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.OpenApi" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO gs_open_api (api_name,
+                                 urls,
+                                 api_desc,
+                                 job_group,
+                                 job_group_name,
+                                 access_token,
+                                 author,
+                                 add_time,
+                                 update_time)
+        VALUES (#{apiName},
+                #{urls},
+                #{apiDesc},
+                #{jobGroup},
+                #{jobGroupName},
+                #{accessToken},
+                #{author},
+                #{addTime},
+                #{updateTime});
+    </insert>
+
+    <update id="update" parameterType="com.tc.gschedulercore.core.model.OpenApi">
+        UPDATE gs_open_api
+        SET
+        <if test="apiDesc != null and apiDesc != ''">
+            api_desc = #{apiDesc},
+        </if>
+        <if test="author != null and author != ''">
+            author = #{author},
+        </if>
+        api_name=#{apiName},
+        urls = #{urls},
+        job_group = #{jobGroup},
+        job_group_name = #{jobGroupName},
+        update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.util.HashMap">
+        DELETE
+        FROM gs_open_api
+        WHERE id = #{id}
+    </delete>
+
+</mapper>

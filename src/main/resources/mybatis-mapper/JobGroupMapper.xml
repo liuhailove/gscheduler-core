@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.JobGroupDao">
+
+    <resultMap id="JobGroup" type="com.tc.gschedulercore.core.model.JobGroup">
+        <result column="id" property="id"/>
+        <result column="app_name" property="appname"/>
+        <result column="title" property="title"/>
+        <result column="address_type" property="addressType"/>
+        <result column="address_list" property="addressList"/>
+        <result column="black_address_list" property="blackAddressList"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="alarm_seatalk" property="alarmSeatalk"/>
+        <result column="online_status" property="onlineStatus"/>
+        <result column="report_receiver" property="reportReceiver"/>
+        <result column="schedule_conf" property="scheduleConf"/>
+        <result column="trigger_status" property="triggerStatus"/>
+        <result column="trigger_last_time" property="triggerLastTime"/>
+        <result column="trigger_next_time" property="triggerNextTime"/>
+        <result column="current_access_token" property="currentAccessToken"/>
+        <result column="last_access_token" property="lastAccessToken"/>
+        <result column="token_effective" property="tokenEffective"/>
+        <result column="alert_notification_way" property="alertNotificationWay"/>
+        <result column="dod_team_id" property="dodTeamId"/>
+        <result column="token_effective_date" property="tokenEffectiveDate"/>
+        <result column="ugroups" property="ugroups"/>
+        <result column="router_flag" property="routerFlag"/>
+        <result column="address_list_with_flag" property="addressListWithFlag"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+		t.app_name,
+		t.title,
+		t.address_type,
+		t.address_list,
+		t.black_address_list,
+		t.update_time,
+		t.alarm_seatalk,
+		t.online_status,
+        t.report_receiver,
+        t.schedule_conf,
+        t.dod_team_id,
+        t.alert_notification_way,
+        t.trigger_status,
+        t.schedule_conf,
+        t.trigger_last_time,
+        t.trigger_next_time,
+        t.current_access_token,
+        t.last_access_token,
+        t.token_effective,
+        t.token_effective_date,
+        t.ugroups,
+        t.router_flag,
+        t.address_list_with_flag
+    </sql>
+
+    <select id="findOffline" resultMap="JobGroup">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_group AS t
+        WHERE t.online_status=0
+        AND t.address_type=0
+        AND t.update_time <![CDATA[ <= ]]> #{endTime}
+        AND t.update_time <![CDATA[ >= ]]> #{startTime}
+        ORDER BY t.app_name, t.title, t.id ASC
+    </select>
+
+    <select id="findAll" resultMap="JobGroup">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_group AS t
+        ORDER BY t.app_name, t.title, t.id ASC
+    </select>
+
+    <select id="findAllId" resultType="int">
+        SELECT id
+        FROM gs_job_group AS t
+        ORDER BY t.app_name, t.title, t.id ASC
+    </select>
+
+    <select id="findByAddressType" parameterType="java.lang.Integer" resultMap="JobGroup">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_group AS t
+        WHERE t.address_type = #{addressType}
+        ORDER BY t.app_name, t.title, t.id ASC
+    </select>
+
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.JobGroup" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO gs_job_group (`app_name`, `title`, `address_type`, `address_list`, `update_time`, `alarm_seatalk`,
+                                  `report_receiver`, `schedule_conf`, `trigger_status`, `trigger_last_time`,
+                                  `trigger_next_time`, `ugroups`, `dod_team_id`, `alert_notification_way`,
+                                  `current_access_token`,
+                                  `token_effective_date`)
+        values (#{appname}, #{title}, #{addressType}, #{addressList}, #{updateTime}, #{alarmSeatalk}, #{reportReceiver},
+                #{scheduleConf}, #{triggerStatus}, #{triggerLastTime}, #{triggerNextTime}, #{ugroups}, #{dodTeamId},
+                #{alertNotificationWay},
+                #{currentAccessToken}, #{tokenEffectiveDate});
+    </insert>
+
+    <update id="update" parameterType="com.tc.gschedulercore.core.model.JobGroup">
+        UPDATE gs_job_group
+        SET `app_name`               = #{appname},
+            `title`                  = #{title},
+            `address_type`           = #{addressType},
+            `address_list`           = #{addressList},
+            `black_address_list`     = #{blackAddressList},
+            `update_time`            = #{updateTime},
+            `alarm_seatalk`          = #{alarmSeatalk},
+            `report_receiver`        = #{reportReceiver},
+            `schedule_conf`          = #{scheduleConf},
+            `trigger_status`         = #{triggerStatus},
+            `trigger_last_time`      = #{triggerLastTime},
+            `trigger_next_time`      = #{triggerNextTime},
+            `ugroups`                = #{ugroups},
+            `alert_notification_way` = #{alertNotificationWay},
+            `dod_team_id`            = #{dodTeamId},
+            `current_access_token`   = #{currentAccessToken},
+            `token_effective_date`   = #{tokenEffectiveDate},
+            `router_flag`            = #{routerFlag},
+            `address_list_with_flag` = #{addressListWithFlag}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateOnlineStatus" parameterType="com.tc.gschedulercore.core.model.JobGroup">
+        UPDATE gs_job_group
+        SET `update_time`  = #{updateTime},
+            `online_status`=#{onlineStatus}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="remove" parameterType="java.lang.Integer">
+        DELETE
+        FROM gs_job_group
+        WHERE id = #{id}
+    </delete>
+
+    <select id="load" parameterType="java.lang.Integer" resultMap="JobGroup">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_group AS t
+        WHERE t.id = #{id}
+    </select>
+
+    <select id="loadCached" parameterType="java.lang.Integer" resultMap="JobGroup">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_group AS t
+        WHERE t.id = #{id}
+    </select>
+
+    <select id="loadByName" parameterType="java.lang.String" resultMap="JobGroup">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_group AS t
+        WHERE t.app_name = #{appName}
+    </select>
+
+    <select id="loadFullByAppNames" parameterType="java.util.HashMap" resultMap="JobGroup">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_group AS t
+        WHERE t.app_name
+        IN
+        <foreach collection="appNames" close=")" item="appName" open="(" separator=",">
+            #{appName}
+        </foreach>
+        LIMIT #{offset}, #{pagesize}
+    </select>
+
+    <select id="loadFullByAppNamesCount" parameterType="java.util.HashMap" resultType="int">
+        SELECT
+        count(1)
+        FROM gs_job_group AS t
+        WHERE t.app_name
+        IN
+        <foreach collection="appNames" close=")" item="appName" open="(" separator=",">
+            #{appName}
+        </foreach>
+    </select>
+
+    <select id="loadPkByNames" parameterType="java.util.HashMap" resultType="int">
+        SELECT
+        t.id
+        FROM gs_job_group AS t
+        WHERE t.app_name
+        IN
+        <foreach collection="appNames" close=")" item="appName" open="(" separator=",">
+            #{appName}
+        </foreach>
+    </select>
+
+    <select id="pageList" parameterType="java.util.HashMap" resultMap="JobGroup">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_group AS t
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="appname != null and appname != ''">
+                AND t.app_name like CONCAT(CONCAT('%', #{appname}), '%')
+            </if>
+            <if test="title != null and title != ''">
+                AND t.title like CONCAT(CONCAT('%', #{title}), '%')
+            </if>
+            <if test="ids!=null and ids.size()>0">
+                AND t.id IN
+                <foreach collection="ids" close=")" item="id" open="(" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </trim>
+        ORDER BY t.id DESC,t.app_name, t.title ASC
+        LIMIT #{offset}, #{pagesize}
+    </select>
+
+    <select id="pageListCount" parameterType="java.util.HashMap" resultType="int">
+        SELECT count(1)
+        FROM gs_job_group AS t
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="appname != null and appname != ''">
+                AND t.app_name like CONCAT(CONCAT('%', #{appname}), '%')
+            </if>
+            <if test="title != null and title != ''">
+                AND t.title like CONCAT(CONCAT('%', #{title}), '%')
+            </if>
+            <if test="ids!=null and ids.size()>0">
+                AND t.id IN
+                <foreach collection="ids" close=")" item="id" open="(" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </trim>
+    </select>
+
+    <select id="loadByIds" resultMap="JobGroup">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_group AS t
+        <if test="ids!=null and ids.size()>0 ">
+            WHERE t.id IN
+            <foreach collection="ids" close=")" item="id" open="(" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+
+    <update id="scheduleUpdate" parameterType="com.tc.gschedulercore.core.model.JobGroup">
+        UPDATE gs_job_group
+        SET trigger_last_time = #{triggerLastTime},
+            trigger_next_time = #{triggerNextTime},
+            trigger_status    = #{triggerStatus}
+        WHERE id = #{id}
+    </update>
+
+    <select id="findNeedUpdateAccessToken" resultMap="JobGroup">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_group AS t
+        WHERE t.token_effective_date <![CDATA[ < ]]>#{nowDate}
+        AND t.token_effective  <![CDATA[ <> ]]> t.current_access_token
+    </select>
+
+    <select id="existUGroup" parameterType="java.util.HashMap" resultType="java.lang.Boolean">
+        SELECT count(1)
+        FROM gs_job_group AS t
+        WHERE find_in_set(#{ugroup,jdbcType=VARCHAR}, ugroups)
+    </select>
+
+    <update id="updateRouterFlag" parameterType="com.tc.gschedulercore.core.model.JobGroup">
+        UPDATE gs_job_group
+        SET router_flag = #{routerFlag}
+        WHERE id = #{id}
+    </update>
+</mapper>

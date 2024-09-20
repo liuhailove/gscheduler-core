@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.JobLogScriptDao">
+    <resultMap id="JobLogScript" type="com.tc.gschedulercore.core.model.JobLogScript">
+        <result column="id" property="id"/>
+        <result column="job_group" property="jobGroup"/>
+        <result column="job_id" property="jobId"/>
+        <result column="job_log_id" property="jobLogId"/>
+        <result column="alarm_rule_id" property="alarmRuleId"/>
+        <result column="alarm_script_id" property="alarmScriptId"/>
+        <result column="script_retry_count" property="scriptRetryCount"/>
+        <result column="script_check_trigger_time" property="scriptCheckTriggerTime"/>
+        <result column="script_retry_conf" property="scriptRetryConf"/>
+        <result column="retry_type" property="retryType"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+		t.job_group,
+		t.job_id,
+		t.job_log_id,
+		t.alarm_rule_id,
+		t.alarm_script_id,
+		t.script_retry_count,
+		t.script_check_trigger_time,
+		t.script_retry_conf,
+        t.retry_type
+    </sql>
+
+    <select id="load" parameterType="java.util.HashMap" resultMap="JobLogScript">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_log_script AS t
+        WHERE t.id = #{id} AND
+        t.job_group = #{jobGroup}
+    </select>
+
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.JobLogScript" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO gs_job_log_script (`job_group`,
+                                       `job_id`,
+                                       `job_log_id`,
+                                       `alarm_rule_id`,
+                                       `alarm_script_id`,
+                                       `script_retry_count`,
+                                       `script_check_trigger_time`,
+                                       `script_retry_conf`,
+                                       `retry_type`)
+        VALUES (#{jobGroup},
+                #{jobId},
+                #{jobLogId},
+                #{alarmRuleId},
+                #{alarmScriptId},
+                #{scriptRetryCount},
+                #{scriptCheckTriggerTime},
+                #{scriptRetryConf},
+                #{retryType})
+    </insert>
+
+    <select id="findClearLogIds" resultType="long">
+        SELECT id FROM gs_job_log_script
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="jobGroup gt 0">
+                AND job_group = #{jobGroup}
+            </if>
+            <if test="jobId gt 0">
+                AND job_id = #{jobId}
+            </if>
+            <if test="clearBeforeTime != null">
+                AND script_check_trigger_time <![CDATA[ <= ]]> #{clearBeforeTime}
+            </if>
+            <if test="clearBeforeNum gt 0">
+                AND id NOT in(
+                SELECT id FROM(
+                SELECT id FROM gs_job_log AS t
+                <trim prefix="WHERE" prefixOverrides="AND | OR">
+                    <if test="jobGroup gt 0">
+                        AND t.job_group = #{jobGroup}
+                    </if>
+                    <if test="jobId gt 0">
+                        AND t.job_id = #{jobId}
+                    </if>
+                </trim>
+                ORDER BY t.script_check_trigger_time DESC
+                LIMIT 0, #{clearBeforeNum}
+                ) t1
+                )
+            </if>
+        </trim>
+        LIMIT #{pagesize}
+    </select>
+
+    <delete id="clearLog">
+        delete from gs_job_log_script
+        WHERE id in
+        <foreach collection="logScriptIds" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </delete>
+
+    <select id="findScriptRetryIds" resultType="long">
+        SELECT id
+        FROM `gs_job_log_script`
+        WHERE `job_group` = #{jobGroup}
+          AND `script_check_trigger_time` <![CDATA[ <> ]]> 0
+          AND `script_check_trigger_time` <![CDATA[ <= ]]> #{maxTriggerTime}
+          AND `script_retry_count` <![CDATA[ > ]]> 0
+        LIMIT #{pagesize}
+    </select>
+
+    <update id="updateScriptRetryCount">
+        UPDATE gs_job_log_script
+        SET `script_retry_count`        = #{toRetryCount},
+            `script_check_trigger_time` = #{nextTriggerTime}
+        WHERE `id` = #{id}
+          AND `script_retry_count` = #{fromRetryCount}
+          AND `job_group` = #{jobGroup}
+    </update>
+
+    <update id="updateScriptTriggerTime">
+        UPDATE gs_job_log_script
+        SET `script_check_trigger_time` = #{nextTriggerTime}
+        WHERE `id` = #{id}
+          AND `job_group` = #{jobGroup}
+    </update>
+</mapper>

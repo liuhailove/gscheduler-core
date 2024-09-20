@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.JobPlatformDao">
+
+    <resultMap id="JobPlatform" type="com.tc.gschedulercore.core.model.JobPlatform">
+        <result column="id" property="id"/>
+        <result column="platform_name" property="platformName"/>
+        <result column="platform_desc" property="platformDesc"/>
+        <result column="platform_address" property="platformAddress"/>
+        <result column="env" property="env"/>
+        <result column="region" property="region"/>
+        <result column="plat_status" property="platStatus"/>
+        <result column="author" property="author"/>
+        <result column="add_time" property="addTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+		t.platform_name,
+        t.platform_desc,
+		t.platform_address,
+		t.env,
+		t.region,
+        t.plat_status,
+        t.author,
+        t.add_time,
+        t.update_time
+    </sql>
+
+    <select id="pageList" parameterType="java.util.HashMap" resultMap="JobPlatform">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_platform AS t
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="platformName != null and platformName != ''">
+                AND t.platform_name like CONCAT(CONCAT('%', #{platformName}), '%')
+            </if>
+            <if test="env != null and env != ''">
+                AND t.env =#{env}
+            </if>
+            <if test="region != null and region != ''">
+                AND t.region =#{region}
+            </if>
+            <if test="platformNames!=null and platformNames.size()>0">
+                AND t.platformName IN
+                <foreach collection="platformNames" close=")" item="platformName" open="(" separator=",">
+                    #{platformName}
+                </foreach>
+            </if>
+        </trim>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{pagesize}
+    </select>
+
+    <select id="pageListCount" parameterType="java.util.HashMap" resultType="int">
+        SELECT count(1)
+        FROM gs_job_platform AS t
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="platformName != null and platformName != ''">
+                AND t.platform_name like CONCAT(CONCAT('%', #{platformName}), '%')
+            </if>
+            <if test="env != null and env != ''">
+                AND t.env =#{env}
+            </if>
+            <if test="region != null and region != ''">
+                AND t.region =#{region}
+            </if>
+            <if test="platformNames!=null and platformNames.size()>0">
+                AND t.platformName IN
+                <foreach collection="platformNames" close=")" item="platformName" open="(" separator=",">
+                    #{platformName}
+                </foreach>
+            </if>
+        </trim>
+    </select>
+
+    <select id="load" parameterType="java.util.HashMap" resultMap="JobPlatform">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_platform AS t
+        WHERE t.id = #{id}
+    </select>
+
+    <select id="loadByName" parameterType="java.util.HashMap" resultMap="JobPlatform">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_platform AS t
+        WHERE t.platform_name = #{platformName}
+    </select>
+
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.JobPlatform" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO gs_job_platform (platform_name,
+                                     platform_address,
+                                     env,
+                                     region,
+                                     plat_status,
+                                     author,
+                                     add_time,
+                                     update_time,
+                                     platform_desc)
+        VALUES (#{platformName},
+                #{platformAddress},
+                #{env},
+                #{region},
+                #{platStatus},
+                #{author},
+                #{addTime},
+                #{updateTime},
+                #{platformDesc});
+    </insert>
+
+    <update id="update" parameterType="com.tc.gschedulercore.core.model.JobPlatform">
+        UPDATE gs_job_platform
+        SET
+        platform_address = #{platformAddress},
+        env = #{env},
+        region = #{region},
+        plat_status = #{platStatus},
+        <if test="author != null and author != ''">
+            author = #{author},
+        </if>
+        platform_desc=#{platformDesc},
+        update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.util.HashMap">
+        DELETE
+        FROM gs_job_platform
+        WHERE id = #{id}
+    </delete>
+
+</mapper>

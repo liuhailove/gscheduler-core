@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.JobRegistryDao">
+
+    <resultMap id="JobRegistry" type="com.tc.gschedulercore.core.model.JobRegistry">
+        <result column="id" property="id"/>
+        <result column="registry_group" property="registryGroup"/>
+        <result column="registry_key" property="registryKey"/>
+        <result column="registry_value" property="registryValue"/>
+        <result column="cpu_stat" property="cpuStat"/>
+        <result column="memory_stat" property="memoryStat"/>
+        <result column="load_stat" property="loadStat"/>
+        <result column="router_flag" property="routerFlag"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+		t.registry_group,
+		t.registry_key,
+		t.registry_value,
+        t.cpu_stat,
+        t.memory_stat,
+        t.load_stat,
+        t.router_flag,
+		t.update_time
+    </sql>
+
+    <select id="findDead" parameterType="java.util.HashMap" resultType="java.lang.Integer">
+        SELECT t.id
+        FROM gs_job_registry AS t
+        WHERE t.update_time <![CDATA[ < ]]> #{deadTimeout}
+    </select>
+
+    <delete id="removeDead" parameterType="java.lang.Integer">
+        DELETE FROM gs_job_registry
+        WHERE id in
+        <foreach collection="ids" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </delete>
+
+    <select id="findMinCpuAddress" parameterType="java.util.HashMap" resultMap="JobRegistry">
+        SELECT t.registry_value, cpu_stat AS cpuStat
+        FROM gs_job_registry t
+        WHERE t.registry_key = #{registryKey}
+          AND t.cpu_stat is not null
+        ORDER BY t.cpu_stat ASC
+        LIMIT 1
+    </select>
+
+    <select id="findMinMemoryAddress" parameterType="java.util.HashMap" resultMap="JobRegistry">
+        SELECT t.registry_value, memory_stat AS memoryStat
+        FROM gs_job_registry t
+        WHERE t.registry_key = #{registryKey}
+          AND t.memory_stat is not null
+        ORDER BY t.memory_stat ASC
+        LIMIT 1
+    </select>
+
+    <select id="findMinLoadAddress" parameterType="java.util.HashMap" resultMap="JobRegistry">
+        SELECT t.registry_value, load_stat AS loadStat
+        FROM gs_job_registry t
+        WHERE t.registry_key = #{registryKey}
+          AND t.load_stat is not null
+        ORDER BY t.load_stat ASC
+        LIMIT 1
+    </select>
+
+    <select id="findAll" parameterType="java.util.HashMap" resultMap="JobRegistry">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_registry AS t
+        WHERE t.update_time <![CDATA[ > ]]>  #{deadTimeout}
+    </select>
+
+    <update id="registryUpdate">
+        UPDATE gs_job_registry
+        SET
+        <if test="cpuStat != null">
+            `cpu_stat` = #{cpuStat},
+        </if>
+        <if test="memoryStat != null">
+            `memory_stat` = #{memoryStat},
+        </if>
+        <if test="loadStat != null">
+            `load_stat` = #{loadStat},
+        </if>
+        <if test="routerFlag != null">
+            `router_flag` = #{routerFlag},
+        </if>
+        `update_time` = #{updateTime}
+        WHERE `registry_group` = #{registryGroup}
+        AND `registry_key` = #{registryKey}
+        AND `registry_value` = #{registryValue}
+    </update>
+
+    <insert id="registrySave">
+        INSERT INTO gs_job_registry(`registry_group`, `registry_key`, `registry_value`, `cpu_stat`, `memory_stat`,
+                                    `load_stat`, `router_flag`, `update_time`)
+        VALUES (#{registryGroup}, #{registryKey}, #{registryValue}, #{cpuStat}, #{memoryStat}, #{loadStat},
+                #{routerFlag}, #{updateTime})
+    </insert>
+
+    <delete id="registryDelete">
+        DELETE
+        FROM gs_job_registry
+        WHERE registry_group = #{registryGroup}
+          AND registry_key = #{registryKey}
+          AND registry_value = #{registryValue}
+    </delete>
+
+    <select id="exist" parameterType="java.util.HashMap" resultType="int">
+        SELECT COUNT(*)
+        FROM gs_job_registry AS t
+        WHERE registry_group = #{registryGroup}
+        <if test="registryValueList!=null and registryValueList.size()>0">
+            AND t.registry_value IN
+            <foreach collection="registryValueList" close=")" item="host" open="(" separator=",">
+                #{host}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="loadRouterFlags" parameterType="java.util.HashMap" resultType="java.lang.String">
+        SELECT distinct (t.router_flag)
+        FROM gs_job_registry AS t
+        WHERE t.registry_key = #{registryKey}
+    </select>
+</mapper>
+

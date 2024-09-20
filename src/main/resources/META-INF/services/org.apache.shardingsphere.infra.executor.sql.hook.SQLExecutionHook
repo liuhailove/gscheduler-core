@@ -1,1 +1,1 @@
-com.shopee.job.admin.component.ShardingPrometheusSQLExecutionHook
+com.tc.gschedulercore.component.ShardingPrometheusSQLExecutionHook

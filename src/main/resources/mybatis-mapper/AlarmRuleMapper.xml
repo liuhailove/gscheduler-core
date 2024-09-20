@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.AlarmRuleDao">
+
+    <resultMap id="AlarmRule" type="com.tc.gschedulercore.core.model.AlarmRule">
+        <result column="id" property="id"/>
+        <result column="job_group_id" property="jobGroupId"/>
+        <result column="job_group_name" property="jobGroupName"/>
+        <result column="resource_type" property="resourceType"/>
+        <result column="alarm_name" property="alarmName"/>
+        <result column="alarm_level" property="alarmLevel"/>
+        <result column="trigger_condition" property="triggerCondition"/>
+        <result column="open" property="open"/>
+        <result column="notify_url" property="notifyUrl"/>
+        <result column="notify_users" property="notifyUsers"/>
+        <result column="job_ides" property="jobIdes"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="gmt_modified" property="gmtModified"/>
+        <result column="voice_alarm_tels" property="voiceAlarmTels"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+		t.job_group_id,
+        t.job_group_name,
+		t.resource_type,
+ 		t.alarm_name,
+		t.alarm_level,
+		t.trigger_condition,
+        t.open,
+        t.notify_url,
+        t.notify_users,
+        t.job_ides,
+		t.gmt_create,
+        t.gmt_modified,
+        t.voice_alarm_tels
+    </sql>
+
+
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.AlarmRule" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO gs_alarm_rule_tab (`job_group_id`, `job_group_name`, `resource_type`, `alarm_name`, `alarm_level`,
+                                       `trigger_condition`,
+                                       `open`, `notify_url`, `notify_users`, `job_ides`, `gmt_create`,`voice_alarm_tels`,
+                                       `gmt_modified`)
+        values (#{jobGroupId}, #{jobGroupName}, #{resourceType}, #{alarmName}, #{alarmLevel}, #{triggerCondition},
+                #{open}, #{notifyUrl}, #{notifyUsers}, #{jobIdes}, #{gmtCreate}, #{voiceAlarmTels}, #{gmtModified})
+    </insert>
+
+    <update id="update" parameterType="com.tc.gschedulercore.core.model.AlarmRule">
+        UPDATE gs_alarm_rule_tab
+        SET `job_group_id`      = #{jobGroupId},
+            `job_group_name`    = #{jobGroupName},
+            `resource_type`     = #{resourceType},
+            `alarm_name`        = #{alarmName},
+            `alarm_level`       = #{alarmLevel},
+            `trigger_condition` = #{triggerCondition},
+            `open`              = #{open},
+            `notify_url`        = #{notifyUrl},
+            `notify_users`      = #{notifyUsers},
+            `gmt_modified`      = #{gmtModified},
+            `voice_alarm_tels`  = #{voiceAlarmTels}
+        WHERE id = #{id}
+    </update>
+
+    <update id="createRelation" parameterType="com.tc.gschedulercore.core.model.AlarmRule">
+        UPDATE gs_alarm_rule_tab
+        SET `job_ides`     = #{jobIdes},
+            `gmt_modified` = #{gmtModified}
+        WHERE id = #{ruleId}
+    </update>
+
+
+    <select id="pageList" parameterType="java.util.HashMap" resultMap="AlarmRule">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_alarm_rule_tab AS t
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="resourceType != null">
+                AND t.resource_type = #{resourceType}
+            </if>
+            <if test="alarmLevel != null">
+                AND t.alarm_level = #{alarmLevel}
+            </if>
+            <if test="alarmName != null and alarmName != ''">
+                AND t.alarm_name like CONCAT(CONCAT('%', #{alarmName}), '%')
+            </if>
+            <if test="permissionApps!=null and permissionApps.size()>0">
+                AND t.job_group_id IN
+                <foreach collection="permissionApps" close=")" item="item" open="(" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </trim>
+        ORDER BY t.id DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="pageListCount" parameterType="java.util.HashMap" resultType="int">
+        SELECT count(1)
+        FROM gs_alarm_rule_tab AS t
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="resourceType != null">
+                AND t.resource_type = #{resourceType}
+            </if>
+            <if test="alarmLevel != null">
+                AND t.alarm_level = #{alarmLevel}
+            </if>
+            <if test="alarmName != null  and alarmName != ''">
+                AND t.alarm_name like CONCAT(CONCAT('%', #{alarmName}), '%')
+            </if>
+            <if test="permissionApps!=null and permissionApps.size()>0">
+                AND t.job_group_id IN
+                <foreach collection="permissionApps" close=")" item="item" open="(" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </trim>
+    </select>
+
+
+    <delete id="remove" parameterType="java.util.HashMap">
+        DELETE
+        FROM gs_alarm_rule_tab
+        WHERE id = #{id}
+    </delete>
+
+    <select id="exist" parameterType="java.util.HashMap" resultType="java.lang.Boolean">
+        SELECT count(1)
+        FROM gs_alarm_rule_tab AS t
+        WHERE t.app = #{app}
+    </select>
+
+
+    <select id="existBy" parameterType="java.util.HashMap" resultType="java.lang.Boolean">
+        SELECT count(1)
+        FROM gs_alarm_rule_tab AS t
+        WHERE t.job_group_id = #{jobGroupId}
+          AND t.alarm_name = #{alarmName}
+    </select>
+
+    <select id="load" parameterType="java.lang.Long" resultMap="AlarmRule">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_alarm_rule_tab AS t
+        WHERE t.id = #{id}
+    </select>
+
+    <select id="findByJobGroupAndJobId" parameterType="java.util.HashMap" resultMap="AlarmRule">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_alarm_rule_tab AS t
+        WHERE t.job_group_id = #{jobGroupId} AND
+        t.open = 1 AND
+        find_in_set(#{jobId,jdbcType=VARCHAR}, t.job_ides)
+    </select>
+
+    <select id="findCachedByJobGroupAndJobId" parameterType="java.util.HashMap" resultMap="AlarmRule">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_alarm_rule_tab AS t
+        WHERE t.job_group_id = #{jobGroupId} AND
+        t.open = 1 AND
+        find_in_set(#{jobId,jdbcType=VARCHAR}, t.job_ides)
+    </select>
+
+    <select id="findAllByResourceType" parameterType="java.util.HashMap" resultMap="AlarmRule">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_alarm_rule_tab AS t
+        WHERE t.resource_type = #{resourceType} AND
+        t.open=1
+    </select>
+
+    <select id="findAllOpenAndHasJob" parameterType="java.util.HashMap" resultMap="AlarmRule">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_alarm_rule_tab AS t
+        WHERE t.open=1
+        AND t.job_ides <![CDATA[ <> ]]> '' AND
+        t.job_ides IS NOT NULL
+
+    </select>
+
+</mapper>

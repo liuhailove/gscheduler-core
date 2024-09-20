@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.JobUserGroupDao">
+
+    <resultMap id="JobUserGroup" type="com.tc.gschedulercore.core.model.JobUserGroup">
+        <result column="id" property="id"/>
+        <result column="group_name" property="groupName"/>
+        <result column="author" property="author"/>
+        <result column="permission_job_groups" property="permissionJobGroups"/>
+        <result column="permission_platforms" property="permissionPlatforms"/>
+        <result column="group_desc" property="groupDesc"/>
+        <result column="add_time" property="addTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+		t.group_name,
+		t.author,
+		t.permission_job_groups,
+		t.permission_platforms,
+		t.group_desc,
+        t.add_time,
+        t.update_time
+    </sql>
+
+    <select id="pageList" parameterType="java.util.HashMap" resultMap="JobUserGroup">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_user_group AS t
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="groupName != null and groupName != ''">
+                AND t.group_name like CONCAT(CONCAT('%', #{group_name}), '%')
+            </if>
+            <if test="groupNames!=null and groupNames.size()>0 ">
+                t.group_name IN
+                <foreach collection="groupNames" close=")" item="groupName" open="(" separator=",">
+                    #{groupName}
+                </foreach>
+            </if>
+        </trim>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{pagesize}
+    </select>
+
+    <select id="pageListCount" parameterType="java.util.HashMap" resultType="int">
+        SELECT count(1)
+        FROM gs_job_user_group AS t
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="groupName != null and groupName != ''">
+                AND t.group_name like CONCAT(CONCAT('%', #{groupName}), '%')
+            </if>
+        </trim>
+    </select>
+
+    <select id="load" parameterType="java.util.HashMap" resultMap="JobUserGroup">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_user_group AS t
+        WHERE t.id = #{id}
+    </select>
+
+    <select id="loadByUGroupName" parameterType="java.util.HashMap" resultMap="JobUserGroup">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_user_group AS t
+        WHERE t.group_name = #{groupName}
+    </select>
+
+    <select id="loadByNames" parameterType="java.util.HashMap" resultMap="JobUserGroup">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_user_group AS t
+        WHERE
+        t.group_name IN
+        <foreach collection="groupNames" close=")" item="groupName" open="(" separator=",">
+            #{groupName}
+        </foreach>
+    </select>
+
+    <select id="loadPermissionJobGroupsByNames" parameterType="java.util.HashMap" resultType="java.lang.String">
+        SELECT
+        t.permission_job_groups
+        FROM gs_job_user_group AS t
+        WHERE
+        t.group_name IN
+        <foreach collection="groupNames" close=")" item="groupName" open="(" separator=",">
+            #{groupName}
+        </foreach>
+    </select>
+
+    <select id="loadPermissionPlatformsByNames" parameterType="java.util.HashMap" resultType="java.lang.String">
+        SELECT
+        t.permission_platforms
+        FROM gs_job_user_group AS t
+        WHERE
+        t.group_name IN
+        <foreach collection="groupNames" close=")" item="groupName" open="(" separator=",">
+            #{groupName}
+        </foreach>
+    </select>
+
+    <select id="loadByPlatform" parameterType="java.util.HashMap" resultMap="JobUserGroup">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_user_group AS t
+        WHERE find_in_set(#{platformName,jdbcType=VARCHAR}, permission_platforms)
+    </select>
+
+    <select id="loadByAppName" parameterType="java.util.HashMap" resultMap="JobUserGroup">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_user_group AS t
+        WHERE find_in_set(#{appName,jdbcType=VARCHAR}, permission_job_groups)
+    </select>
+
+    <select id="existByPlatform" parameterType="java.util.HashMap" resultType="java.lang.Boolean">
+        SELECT count(1)
+        FROM gs_job_user_group AS t
+        WHERE find_in_set(#{platformName,jdbcType=VARCHAR}, permission_platforms)
+    </select>
+
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.JobUserGroup" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO gs_job_user_group (group_name,
+                                       permission_job_groups,
+                                       permission_platforms,
+                                       group_desc,
+                                       author,
+                                       add_time,
+                                       update_time)
+        VALUES (#{groupName},
+                #{permissionJobGroups},
+                #{permissionPlatforms},
+                #{groupDesc},
+                #{author},
+                #{addTime},
+                #{updateTime});
+    </insert>
+
+    <update id="update" parameterType="com.tc.gschedulercore.core.model.JobUserGroup">
+        UPDATE gs_job_user_group
+        SET
+        group_name = #{groupName},
+        <if test="permissionJobGroups != null and permissionJobGroups != ''">
+            permission_job_groups = #{permissionJobGroups},
+        </if>
+        <if test="permissionPlatforms != null and permissionPlatforms != ''">
+            permission_platforms = #{permissionPlatforms},
+        </if>
+        <if test="groupDesc != null and groupDesc != ''">
+            group_desc = #{groupDesc},
+        </if>
+        <if test="author != null and author != ''">
+            author = #{author},
+        </if>
+        update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.util.HashMap">
+        DELETE
+        FROM gs_job_user_group
+        WHERE id = #{id}
+    </delete>
+
+</mapper>

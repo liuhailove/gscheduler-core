@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.JobInfoHistoryDao">
+
+    <resultMap id="JobInfoHistory" type="com.tc.gschedulercore.core.model.JobInfoHistory">
+        <result column="id" property="id"/>
+        <result column="job_id" property="jobId"/>
+        <result column="job_source" property="jobSource"/>
+        <result column="job_remark" property="jobRemark"/>
+        <result column="add_time" property="addTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+		t.job_id,
+		t.job_source,
+		t.job_remark,
+		t.add_time
+    </sql>
+
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.JobInfoHistory" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO gs_job_info_history (`job_id`,
+                                         `job_source`,
+                                         `job_remark`,
+                                         `add_time`)
+        VALUES (#{jobId},
+                #{jobSource},
+                #{jobRemark},
+                #{addTime});
+    </insert>
+
+    <select id="findByJobId" parameterType="java.lang.Integer" resultMap="JobInfoHistory">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_job_info_history AS t
+        WHERE t.job_id = #{jobId}
+        ORDER BY id DESC
+    </select>
+
+    <delete id="removeOld">
+        DELETE
+        FROM gs_job_info_history
+        WHERE id NOT in (
+            SELECT id
+            FROM (
+                     SELECT id
+                     FROM gs_job_info_history
+                     WHERE `job_id` = #{jobId}
+                     ORDER BY add_time desc
+                     LIMIT 0, #{limit}
+                 ) t1
+        )
+          AND `job_id` = #{jobId}
+    </delete>
+
+    <delete id="deleteByJobId" parameterType="java.lang.Integer">
+        DELETE
+        FROM gs_job_info_history
+        WHERE `job_id` = #{jobId}
+    </delete>
+
+</mapper>

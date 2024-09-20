@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.JobLockDao">
+
+    <resultMap id="JobLock" type="com.tc.gschedulercore.core.model.JobLock">
+        <result column="lock_name" property="lockName"/>
+    </resultMap>
+
+    <select id="loadForUpdate" parameterType="java.util.HashMap" resultType="java.lang.String">
+        SELECT t.lock_name
+        FROM gs_job_lock AS t
+        WHERE t.lock_name = #{lockName} FOR
+        UPDATE
+    </select>
+
+    <insert id="lockNameSave">
+        INSERT INTO gs_job_lock(`lock_name`)
+        VALUES (#{lockName})
+    </insert>
+</mapper>

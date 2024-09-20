@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.JobCompensateDao">
+
+    <resultMap id="JobCompensate" type="com.tc.gschedulercore.core.model.JobCompensate">
+        <result column="id" property="id"/>
+        <result column="job_log_id" property="jobLogId"/>
+        <result column="job_group" property="jobGroup"/>
+        <result column="job_id" property="jobId"/>
+        <result column="expire_time" property="expireTime"/>
+        <result column="add_time" property="addTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+		t.job_log_id,
+		t.job_group,
+		t.job_id,
+		t.expire_time,
+		t.add_time
+    </sql>
+
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.JobCompensate" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO gs_job_compensate (`job_log_id`, `job_group`, `job_id`, `expire_time`, `add_time`)
+        values (#{jobLogId}, #{jobGroup}, #{jobId}, #{expireTime}, #{addTime});
+    </insert>
+
+    <select id="exist" parameterType="java.util.HashMap" resultType="java.lang.Boolean">
+        SELECT count(1)
+        FROM gs_job_compensate AS t
+        WHERE t.job_log_id = #{jobLogId}
+          AND t.job_group = #{jobGroup}
+          AND t.job_id = #{jobId}
+    </select>
+</mapper>

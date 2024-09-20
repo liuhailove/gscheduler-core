@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tc.gschedulercore.dao.AlarmScriptItemDao">
+
+    <resultMap id="AlarmScriptItem" type="com.tc.gschedulercore.core.model.AlarmScriptItem">
+        <result column="id" property="id"/>
+        <result column="alarm_rule_id" property="alarmRuleId"/>
+        <result column="alarm_script_id" property="alarmScriptId"/>
+        <result column="alarm_check_exp" property="alarmCheckExp"/>
+        <result column="alarm_msg_exp" property="alarmMsgExp"/>
+        <result column="cron_exp" property="cronExp"/>
+        <result column="job_group" property="jobGroup"/>
+        <result column="job_id" property="jobId"/>
+        <result column="trigger_last_time" property="triggerLastTime"/>
+        <result column="trigger_next_time" property="triggerNextTime"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="retry_conf" property="retryConf"/>
+        <result column="retry_type" property="retryType"/>
+        <result column="script_retry_count" property="scriptRetryCount"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t.id,
+        t.alarm_rule_id,
+		t.alarm_script_id,
+        t.alarm_check_exp,
+		t.alarm_msg_exp,
+ 		t.cron_exp,
+		t.job_group,
+        t.job_id,
+        t.trigger_last_time,
+        t.trigger_next_time,
+		t.gmt_create,
+        t.retry_conf,
+        t.retry_type,
+        t.script_retry_count
+    </sql>
+
+
+    <insert id="save" parameterType="com.tc.gschedulercore.core.model.AlarmScriptItem" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO gs_alarm_script_item_tab (`alarm_rule_id`, `alarm_script_id`, `alarm_check_exp`, `alarm_msg_exp`,
+                                              `cron_exp`, `job_group`, `job_id`, `trigger_last_time`,
+                                              `trigger_next_time`, `gmt_create`, `retry_conf`, `retry_type`,
+                                              `script_retry_count`)
+        values (#{alarmRuleId}, #{alarmScriptId}, #{alarmCheckExp}, #{alarmMsgExp},
+                #{cronExp}, #{jobGroup}, #{jobId}, #{triggerLastTime}, #{triggerNextTime}, #{gmtCreate}, #{retryConf},
+                #{retryType}, #{scriptRetryCount})
+    </insert>
+
+    <update id="update" parameterType="com.tc.gschedulercore.core.model.AlarmScriptItem">
+        UPDATE gs_alarm_script_item_tab
+        SET `alarm_rule_id`     = #{alarmRuleId},
+            `alarm_script_id`   = #{alarmScriptId},
+            `alarm_check_exp`   = #{alarmCheckExp},
+            `alarm_msg_exp`     = #{alarmMsgExp},
+            `cron_exp`          = #{cronExp},
+            `job_group`         = #{jobGroup},
+            `job_id`            = #{jobId},
+            `trigger_last_time` = #{triggerLastTime},
+            `trigger_next_time` = #{triggerNextTime},
+            `retry_conf`        = #{retryConf},
+            `retry_type`        = #{retryType},
+            `script_retry_count` = #{scriptRetryCount}
+        WHERE id = #{id}
+    </update>
+
+
+    <select id="load" parameterType="java.lang.Long" resultMap="AlarmScriptItem">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_alarm_script_item_tab AS t
+        WHERE t.id = #{id}
+    </select>
+
+    <delete id="remove" parameterType="java.util.HashMap">
+        DELETE
+        FROM gs_alarm_script_item_tab
+        WHERE id = #{id}
+    </delete>
+
+    <delete id="removeBy" parameterType="java.util.HashMap">
+        DELETE
+        FROM gs_alarm_script_item_tab
+        WHERE alarm_rule_id = #{alarmRuleId}
+    </delete>
+
+    <delete id="removeByJob" parameterType="java.util.HashMap">
+        DELETE
+        FROM gs_alarm_script_item_tab
+        WHERE alarm_rule_id = #{alarmRuleId}
+          AND job_id = #{jobId}
+    </delete>
+
+    <delete id="removeByScript" parameterType="java.util.HashMap">
+        DELETE
+        FROM gs_alarm_script_item_tab
+        WHERE alarm_script_id = #{alarmScriptId}
+    </delete>
+
+    <select id="queryByAlarmRuleAndJob" parameterType="java.util.HashMap" resultMap="AlarmScriptItem">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_alarm_script_item_tab AS t
+        WHERE t.`alarm_rule_id` = #{alarmRuleId} AND
+        t.`job_id` = #{jobId}
+    </select>
+
+    <select id="queryBy" parameterType="java.util.HashMap" resultMap="AlarmScriptItem">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gs_alarm_script_item_tab AS t
+        WHERE t.`alarm_rule_id` = #{alarmRuleId} AND
+        t.`alarm_script_id` = #{alarmScriptId} AND
+        t.`job_group` = #{jobGroup} AND
+        t.`job_id` = #{jobId}
+    </select>
+
+    <select id="queryJobIdByAlarm" parameterType="java.util.HashMap" resultType="java.lang.Integer">
+        SELECT t.job_id
+        FROM gs_alarm_script_item_tab AS t
+        WHERE t.alarm_rule_id = #{alarmRuleId}
+    </select>
+</mapper>
