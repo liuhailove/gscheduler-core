@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>go-scheduler</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/css/layui.css"
+          media="all">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/css/public.css" media="all">
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/common.js"></script>
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/base64.js"></script>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+
+        <fieldset class="table-search-fieldset">
+            <legend>搜索信息</legend>
+            <div style="margin: 10px 10px 10px 10px">
+                <form class="layui-form layui-form-pane" action="">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">执行器</label>
+                            <div class="layui-input-inline">
+                                <select name="appName" id="appName" class="layui-select" lay-search placeholder="选择或搜索">
+                                    <option value="" selected="">全部</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">任务名称</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="jobName" id="jobName" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">任务描述</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="jobDesc" id="jobDesc" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">JobHandler</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="executorHandler" id="executorHandler" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">负责人</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="author" id="author" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">状态</label>
+                            <div class="layui-input-inline">
+                                <div class="layui-input-inline">
+                                    <select name="triggerStatus" id="triggerStatus">
+                                        <option value="-1" selected="">全部</option>
+                                        <option value="1">启动</option>
+                                        <option value="0">停止</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                            <button type="submit" class="layui-btn layui-btn-normal" lay-submit
+                                    lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </fieldset>
+        <script type="text/html" id="toolbar">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-normal layui-btn-xs data-add-btn" lay-event="add">添加</button>
+                {{# if (jobInfoPermissionOp.contains("job_common_add")){ }}
+                <button class="layui-btn layui-btn-normal layui-btn-xs data-add-btn" lay-event="triggerDelay">延迟
+                </button>
+                {{# } }}
+                {{# if (jobInfoPermissionOp.contains("job_common_export")){ }}
+                <button class="layui-btn layui-btn-normal layui-btn-xs data-add-btn" lay-event="export">导出</button>
+                {{# } }}
+                {{# if (jobInfoPermissionOp.contains("job_common_syn")){ }}
+                <button class="layui-btn layui-btn-normal layui-btn-xs data-add-btn" lay-event="taskSync">任务同步</button>
+                {{# } }}
+            </div>
+        </script>
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+        <script type="text/html" id="currentTableBar">
+            <div class="layui-btn-group">
+                {{# if(d.triggerStatus == 0 ){ }}
+                {{# if (jobInfoPermissionOp.contains("job_common_start")){ }}
+                <a class="layui-btn layui-btn-primary layui-btn-xs data-count-edit" lay-event="start">启动</a>
+                {{# } }}
+                {{# } else { }}
+                {{# if (jobInfoPermissionOp.contains("job_common_stop")){ }}
+                <a class="layui-btn layui-btn-primary layui-btn-xs data-count-edit" lay-event="stop">停止</a>
+                {{# } }}
+                {{# } }}
+                {{# if (jobInfoPermissionOp.contains("job_common_edit")){ }}
+                <a class="layui-btn layui-btn-primary layui-btn-xs data-count-edit" lay-event="edit">编辑</a>
+                {{# } }}
+                {{# if (jobInfoPermissionOp.contains("job_common_exec_once")){ }}
+                <a class="layui-btn layui-btn-primary layui-btn-xs data-count-edit" lay-event="execOnce">执行一次</a>
+                {{# } }}
+                {{# if (jobInfoPermissionOp.contains("job_common_schedule_plan")){ }}
+                <a class="layui-btn layui-btn-primary layui-btn-xs data-count-edit" lay-event="schedulePlan">调度计划</a>
+                {{# } }}
+                {{# if (jobInfoPermissionOp.contains("job_common_log")){ }}
+                <a class="layui-btn layui-btn-primary layui-btn-xs data-count-edit" lay-event="log">日志</a>
+                {{# } }}
+                {{# if (jobInfoPermissionOp.contains("job_common_change_log")){ }}
+                <a class="layui-btn layui-btn-primary layui-btn-xs data-count-edit" lay-event="change">变更</a>
+                {{# } }}
+                {{# if (jobInfoPermissionOp.contains("job_common_node")){ }}
+                <a class="layui-btn layui-btn-primary layui-btn-xs data-count-edit" lay-event="registryNodes">节点</a>
+                <a class="layui-btn layui-btn-primary layui-btn-xs data-count-edit"
+                   lay-event="routerFlagUpdate">路由设置</a>
+                {{# } }}
+                {{# if (jobInfoPermissionOp.contains("job_common_delete")){ }}
+                <a class="layui-btn layui-btn-danger layui-btn-xs data-count-edit" lay-event="delete">删除</a>
+                {{# } }}
+            </div>
+        </script>
+
+    </div>
+</div>
+<script src="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="${request.contextPath}/static/layuimini/js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'table', 'dropdown', 'miniTab', 'seaFun'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+            seaFun = layui.seaFun,
+            miniTab = layui.miniTab;
+        miniTab.listen();
+        var user = seaFun.queryAuthUser();
+        // --------------------------操作控制start--------------------------
+        $.ajax({
+            type: "GET",
+            async: false,
+            headers: {"auth0": user.authToken},
+            url: "${request.contextPath}/jobrole/loadOp?parent=job_common&roleName=" + user.roleName,
+            dataType: "json",
+            success: function (data) {
+                if (data.code === 200) {
+                    for (var i = 0; i < data.content.length; i++) {
+                        jobInfoPermissionOp.push(data.content[i].menuName);
+                    }
+                }
+            }
+        });
+        // --------------------------操作控制end--------------------------
+        var permissionJobGroups = [];
+        $.ajax({
+            type: "GET",
+            async: false,
+            headers: {"auth0": user.authToken},
+            url: "${request.contextPath}/jobusergroup/loadPermissionJobGroupsByNames?groupNames=" + user.permissionGroups,
+            dataType: "json",
+            success: function (data) {
+                if (data.code === 200) {
+                    permissionJobGroups = permissionJobGroups.concat(data.content);
+                }
+            }
+        });
+        var jobGroupArr = [];
+        $.ajax({
+            type: "GET",
+            async: false,
+            headers: {"auth0": user.authToken},
+            url: "${request.contextPath}/jobgroup/loadFullByAppNames?appNames=" + permissionJobGroups + "&page=1&limit=9999",
+            dataType: "json",
+            success: function (data) {
+                if (data.code === 200) {
+                    for (var i = 0; i < data.data.length; i++) {
+                        jobGroupArr.push(data.data[i].id);
+                        $("#appName").append("<option value='" + data.data[i].id + "'>" + data.data[i].appname + "</option>");
+                        form.render("select");
+                    }
+                }
+            }
+        });
+        var jobInfoTable = table.render({
+            elem: '#currentTableId',
+            headers: {"auth0": user.authToken},
+            url: '${request.contextPath}/jobinfo/pageList',
+            method: "get",
+            toolbar: '#toolbar',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            cols: [[
+                {field: 'id', width: 80, title: 'ID', sort: true, fixed: 'left'},
+                {field: 'jobName', width: 260, title: '任务名称', fixed: 'left'},
+                {field: 'jobDesc', title: '任务描述', width: 160,},
+                {
+                    field: 'appName', title: '执行器名称', event: "queryJobGroup", width: 200,
+                    templet: function (data) {
+                        return "<a href='javascript:' style='color:#0084e9;font-weight: bold'>" + data.appName + "</a>";
+                    }
+                },
+                {
+                    field: 'scheduleType', title: '调度类型', width: 140,
+                    templet: function (data) {
+                        if (data.scheduleType === 'NONE') {
+                            return 'NONE';
+                        } else {
+                            return data.scheduleType + ":" + data.scheduleConf;
+                        }
+                    }
+                },
+                {
+                    field: 'glueType', title: '运行模式', width: 200,
+                    templet: function (data) {
+                        if (data.glueType === 'BEAN') {
+                            return 'GO:' + data.executorHandler;
+                        } else {
+                            return data.glueType;
+                        }
+                    }
+                },
+                {
+                    field: 'triggerStatus', width: 80, title: '状态',
+                    templet: function (data) {
+                        if (data.triggerStatus === 1) {
+                            return '<span class="layui-btn layui-btn-primary layui-btn-xs layui-border-blue">运行</span>';
+                        } else {
+                            return '<span class="layui-btn layui-btn-primary layui-btn-xs layui-border-red">停止</span>';
+                        }
+                    }
+                },
+                {field: 'childJobId', title: '子任务', width: 100},
+                {field: 'parentJobId', title: '父任务', width: 100},
+                {field: 'triggerNextDateTime', title: '下次调度时间', width: 180},
+                {field: 'routerFlag', width: 160, title: '路由标签'},
+                {field: 'author', width: 100, title: '负责人', hide: true},
+
+                {title: '操作', minWidth: 400, toolbar: '#currentTableBar', align: "center", fixed: "right"}
+            ]],
+            done: function (res, curr, count) {
+            },
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 10,
+            page: true,
+            skin: 'line',
+            where: {
+                "jobGroups": jobGroupArr.join(","),
+            }
+        });
+
+        // 监听搜索操作
+        form.on('submit(data-search-btn)', function (data) {
+            var jobGroups = "";
+            if (data.field.appName !== undefined && data.field.appName !== "") {
+                jobGroups = data.field.appName;
+            } else {
+                jobGroups = jobGroupArr.join(",");
+            }
+            //执行搜索重载
+            table.reload('currentTableId', {
+                page: {
+                    curr: 1
+                },
+                headers: {"auth0": user.authToken},
+                where: {
+                    "jobName": data.field.jobName,
+                    "jobDesc": data.field.jobDesc,
+                    "executorHandler": data.field.executorHandler,
+                    "triggerStatus": data.field.triggerStatus,
+                    "author": data.field.author,
+                    "jobGroups": jobGroups,
+                }
+            }, 'data');
+            return false;
+        });
+
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(currentTableFilter)', function (obj) {
+            if (obj.event === 'add') {  // 监听添加操作
+                var index = layer.open({
+                    title: '添加任务',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin: true,
+                    shadeClose: true,
+                    area: ['80%', '100%'],
+                    content: 'add',
+                    end: function () {
+                        location.reload();
+                    }
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+            } else if (obj.event === 'export') {  // 监听添加操作
+                var jobGroups = "";
+                if ($("#appName").val() !== "") {
+                    jobGroups = $("#appName").val();
+                } else {
+                    jobGroups = jobGroupArr.join(",");
+                }
+                var a = document.createElement('a');
+                var url = "${request.contextPath}/jobgroup/export?ids=" + jobGroups;
+                var filename = "执行器及调度任务详细信息.xlsx";
+                a.href = url;
+                a.download = filename;
+                $("body").append(a);  // 修复firefox中无法触发click
+                a.click()
+                $(a).remove();
+            } else if (obj.event === 'triggerDelay') {  // 监听添加操作
+                var jobGroups = "";
+                if ($("#appName").val() !== "") {
+                    jobGroups = $("#appName").val();
+                } else {
+                    jobGroups = jobGroupArr.join(",");
+                }
+                var index = layer.open({
+                    title: '触发延迟',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin: true,
+                    shadeClose: true,
+                    area: ['35%', '60%'],
+                    content: "${request.contextPath}/jobinfo/triggerDelayRedirect?ids=" + jobGroups,
+                    end: function () {
+                        layer.close(index);
+                        //执行搜索重载
+                        table.reload('currentTableId', {
+                            page: {
+                                curr: 1
+                            },
+                            headers: {"auth0": user.authToken},
+                            where: {
+                                "appName": $("#appName").val(),
+                                "jobName": $("#jobName").val(),
+                                "jobDesc": $("#jobDesc").val(),
+                                "executorHandler": $("#executorHandler").val(),
+                                "triggerStatus": $("#triggerStatus").val(),
+                                "author": $("#author").val(),
+                                "jobGroups": jobGroupArr.join(","),
+                            }
+                        }, 'data');
+                    }
+                });
+            }
+        });
+
+
+        table.on('tool(currentTableFilter)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'start') {
+                layer.confirm('确认启动', {icon: 3, title: '提示'}, function (index) {
+                    $.ajax({
+                        type: "GET",
+                        async: false,
+                        headers: {"auth0": user.authToken},
+                        url: "${request.contextPath}/jobinfo/start?id=" + data.id,
+                        success: function (data) {
+                            if (data.code !== 200) {
+                                layer.alert(data.msg, {
+                                    title: '失败',
+                                    type: 1
+                                });
+                            }
+                        },
+                    });
+                    layer.close(index);
+                    //执行搜索重载
+                    table.reload('currentTableId', {
+                        headers: {"auth0": user.authToken},
+                        where: {
+                            "appName": $("#appName").val(),
+                            "jobName": $("#jobName").val(),
+                            "jobDesc": $("#jobDesc").val(),
+                            "executorHandler": $("#executorHandler").val(),
+                            "triggerStatus": $("#triggerStatus").val(),
+                            "author": $("#author").val(),
+                            "jobGroups": jobGroupArr.join(","),
+                        }
+                    }, 'data');
+                });
+                return false;
+            } else if (obj.event === 'stop') {
+                layer.confirm('确认停止', {icon: 3, title: '提示'}, function (index) {
+                    $.ajax({
+                        type: "GET",
+                        async: false,
+                        headers: {"auth0": user.authToken},
+                        url: "${request.contextPath}/jobinfo/stop?id=" + data.id,
+                        success: function (data) {
+                            if (data.code !== 200) {
+                                layer.alert(data.msg, {
+                                    title: '失败',
+                                    type: 1
+                                });
+                            }
+                        },
+                    });
+                    layer.close(index);
+                    //执行搜索重载
+                    table.reload('currentTableId', {
+                        headers: {"auth0": user.authToken},
+                        where: {
+                            "appName": $("#appName").val(),
+                            "jobName": $("#jobName").val(),
+                            "jobDesc": $("#jobDesc").val(),
+                            "executorHandler": $("#executorHandler").val(),
+                            "triggerStatus": $("#triggerStatus").val(),
+                            "author": $("#author").val(),
+                            "jobGroups": jobGroupArr.join(","),
+                        }
+                    }, 'data');
+                });
+                return false;
+            } else if (obj.event === 'execOnce') {
+                layer.open({
+                    type: 2,
+                    content: 'execOnce?id=' + data.id,
+                    btnAlign: 'c', //按钮居中
+                    shade: 0.2, //不显示遮罩
+                    shadeClose: true,
+                    title: '执行一次',
+                    area: ['50%', '50%']
+                });
+            } else if (obj.event === 'schedulePlan') {
+                $.ajax({
+                    type: "GET",
+                    async: false,
+                    headers: {"auth0": user.authToken},
+                    url: "${request.contextPath}/jobinfo/nextTriggerTime?scheduleType=" + data.scheduleType + "&scheduleConf=" + data.scheduleConf,
+                    success: function (data) {
+                        if (data.code !== 200) {
+                            layer.alert(data.msg, {
+                                title: '失败',
+                                type: 1
+                            });
+                            return;
+                        }
+                        var content = "";
+                        for (var i = 0; i < data.content.length; i++) {
+                            content += data.content[i] + "<br>";
+                        }
+                        layer.open({
+                            title: '执行计划',
+                            type: 1,
+                            shade: 0.2,
+                            area: ['15%', '20%'],
+                            offset: "auto",
+                            content: '<div style="padding: 10px;">' + content + '</div>',
+                        });
+                    },
+                });
+            } else if (obj.event === 'log') {
+                miniTab.openNewTabByIframe({
+                    href: '${request.contextPath}/joblog/list?jobId=' + data.id,
+                    title: "调度日志",
+                });
+                return false;
+            } else if (obj.event === 'registryNodes') {
+                $.ajax({
+                        type: "GET",
+                        async: false,
+                        headers: {"auth0": user.authToken},
+                        url: "${request.contextPath}/jobgroup/loadByIds?ids=" + data.jobGroup,
+                        success: function (data) {
+                            var registryNodes = "";
+                            if (data != null && data.length > 0 && data[0].addressList != null) {
+                                registryNodes += data[0].addressList;
+                                registryNodes = registryNodes.replace(RegExp(",", "g"), "<br>");
+                            }
+                            layer.open({
+                                title: '注册节点',
+                                type: 1,
+                                shade: 0.2,
+                                area: ['15%', '20%'],
+                                offset: "auto",
+                                content: '<div style="padding: 10px;">' + registryNodes + '</div>',
+                            });
+                        },
+                    }
+                );
+            } else if (obj.event === 'delete') {
+                layer.confirm('确认删除', {icon: 3, title: '提示'}, function (index) {
+                    $.ajax({
+                        type: "GET",
+                        async: false,
+                        headers: {"auth0": user.authToken},
+                        url: "${request.contextPath}/jobinfo/remove?id=" + data.id,
+                        success: function (data) {
+                            if (data.code !== 200) {
+                                layer.alert(data.msg, {
+                                    title: '失败',
+                                    type: 1
+                                });
+                            }
+                        },
+                    });
+                    layer.close(index);
+                    //执行搜索重载
+                    table.reload('currentTableId', {
+                        page: {
+                            curr: 1
+                        },
+                        headers: {"auth0": user.authToken},
+                        where: {
+                            "appName": $("#appName").val(),
+                            "jobName": $("#jobName").val(),
+                            "jobDesc": $("#jobDesc").val(),
+                            "executorHandler": $("#executorHandler").val(),
+                            "triggerStatus": $("#triggerStatus").val(),
+                            "author": $("#author").val(),
+                            "jobGroups": jobGroupArr.join(","),
+                        }
+                    }, 'data');
+                });
+                return false;
+            } else if (obj.event === 'edit') {  // 监听添加操作
+                var index = layer.open({
+                    title: '编辑任务',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin: true,
+                    shadeClose: true,
+                    area: ['80%', '100%'],
+                    content: 'edit?id=' + data.id,
+                    end: function () {
+                        layer.close(index);
+                        var aName = $("#appName").val();
+                        if (aName !== undefined && aName !== "") {
+                            jobGroups = aName;
+                        } else {
+                            jobGroups = jobGroupArr.join(",");
+                        }
+                        //执行搜索重载
+                        table.reload('currentTableId', {
+                            page: {
+                                curr: 1
+                            },
+                            headers: {"auth0": user.authToken},
+                            where: {
+                                "jobName": $("#jobName").val(),
+                                "jobDesc": $("#jobDesc").val(),
+                                "executorHandler": $("#executorHandler").val(),
+                                "triggerStatus": $("#triggerStatus").val(),
+                                "author": $("#author").val(),
+                                "jobGroups": jobGroups,
+                            }
+                        }, 'data');
+                    }
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+            } else if (obj.event === "queryJobGroup") {
+                layer.open({
+                    title: '执行器明细',
+                    type: 2,
+                    shade: 0.2,
+                    shadeClose: true,
+                    area: ['60%', '80%'],
+                    content: '${request.contextPath}/jobgroup/detail?id=' + data.jobGroup,
+                });
+            } else if (obj.event === 'routerFlagUpdate') {
+                var index = layer.open({
+                    title: '路由设置',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin: true,
+                    shadeClose: true,
+                    area: ['30%', '30%'],
+                    content: 'routerFlag?jobId=' + obj.data.id + "&jobGroup=" + obj.data.jobGroup,
+                    end: function () {
+                        layer.close(index);
+                        //执行搜索重载
+                        table.reload('currentTableId', {
+                            page: {
+                                curr: 1
+                            },
+                            headers: {"auth0": user.authToken},
+                            where: {
+                                "jobName": $("#jobName").val(),
+                                "jobDesc": $("#jobDesc").val(),
+                                "executorHandler": $("#executorHandler").val(),
+                                "triggerStatus": $("#triggerStatus").val(),
+                                "author": $("#author").val(),
+                                "jobGroups": jobGroups,
+                            }
+                        }, 'data');
+                    }
+                });
+            }
+        })
+    })
+    ;
+</script>
+
+</body>
+</html>

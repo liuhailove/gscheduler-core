@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>go-scheduler</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/css/layui.css"
+          media="all">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/css/public.css" media="all">
+    <link rel="stylesheet"
+          href="${request.contextPath}/static/layuimini/lib/font-awesome-4.7.0/css/font-awesome.min.css"
+          media="all">
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/common.js"></script>
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/base64.js"></script>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <script type="text/html" id="toolbar">
+            <div class="layui-btn-container">
+                {{# if (jobRolePermissionOp.contains("role_manager_add")){ }}
+                <button class="layui-btn layui-btn-normal layui-btn-xs data-add-btn" lay-event="add"> 添加</button>
+                {{# } }}
+            </div>
+        </script>
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+        <script type="text/html" id="currentTableBar">
+            <div class="layui-btn-group">
+                {{# if(d.roleName !== 'TEST_USER_ROLE' && d.roleName !== 'SYSTEM_MANAGER_ROLE'  ){ }}
+                {{# if (jobRolePermissionOp.contains("role_manage_edit")){ }}
+                <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="edit">编辑</a>
+                {{# } }}
+                {{# if (jobRolePermissionOp.contains("role_manage_delete")){ }}
+                <a class="layui-btn layui-btn-danger layui-btn-xs  data-count-delete" lay-event="delete">删除</a>
+                {{# } }}
+                {{# } }}
+            </div>
+        </script>
+    </div>
+</div>
+<script src="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="${request.contextPath}/static/layuimini/js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'table', 'element', 'seaFun'], function () {
+        var $ = layui.jquery,
+            seaFun = layui.seaFun,
+            table = layui.table;
+        var user = seaFun.queryAuthUser();
+        $.ajax({
+            type: "GET",
+            async: false,
+            headers: {"auth0": user.authToken},
+            url: "${request.contextPath}/jobrole/loadOp?parent=role_manage&roleName=" + user.roleName,
+            dataType: "json",
+            success: function (data) {
+                if (data.code === 200) {
+                    for (var i = 0; i < data.content.length; i++) {
+                        jobRolePermissionOp.push(data.content[i].menuName);
+                    }
+                }
+            }
+        });
+        // --------------------------操作控制end--------------------------
+        var roleTable = table.render({
+            elem: '#currentTableId',
+            headers: {"auth0": user.authToken},
+            url: '${request.contextPath}/jobrole/pageList',
+            method: "get",
+            toolbar: '#toolbar',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            cols: [[
+                {field: 'id', title: 'ID', sort: true, hide: true, fixed: 'left', width: 200},
+                {field: 'roleName', title: '角色名称'},
+                {field: 'roleDesc', title: '角色描述'},
+                {field: 'permissionMenus', title: '访问菜单', width: 250},
+                {field: 'permissionUrls', title: '访问URL'},
+                {field: 'addTime', title: '创建时间'},
+                {title: '操作', minWidth: 160, toolbar: '#currentTableBar', align: "center", fixed: 'right'}
+            ]],
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 10,
+            page: true,
+            skin: 'line',
+            done: function (res, curr, count) {
+                $('th').css({'font-weight': 'bold'});
+            }
+        });
+
+        table.on('tool(currentTableFilter)', function (obj) {
+            if (obj.event === 'edit') {
+                var index = layer.open({
+                    title: '编辑',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin: true,
+                    shadeClose: true,
+                    area: ['60%', '85%'],
+                    content: 'edit?roleName=' + obj.data.roleName,
+                    end: function () {
+                        location.reload();
+                    }
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+            } else if (obj.event === 'delete') {
+                layer.confirm('确认删除', {icon: 3, title: '提示'}, function (index) {
+                    $.ajax({
+                        type: "GET",
+                        async: false,
+                        headers: {"auth0": user.authToken},
+                        url: "${request.contextPath}/jobrole/remove?roleName=" + obj.data.roleName,
+                        success: function (data) {
+                            if (data.code !== 200) {
+                                layer.alert(data.msg, {
+                                    title: '失败',
+                                    type: 1
+                                });
+                            }
+                        },
+                    });
+                    layer.close(index);
+                    //执行搜索重载
+                    table.reload('currentTableId', {
+                        page: {
+                            curr: roleTable.config.page.curr,
+                        },
+                    }, 'data');
+                });
+                return false;
+            }
+        });
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(currentTableFilter)', function (obj) {
+            if (obj.event === 'add') {  // 监听添加操作
+                var index = layer.open({
+                    title: '新建',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin: true,
+                    shadeClose: true,
+                    area: ['60%', '85%'],
+                    content: 'add',
+                    end: function () {
+                        location.reload();
+                    }
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+            }
+        });
+
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>首页三</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet"
+          href="${request.contextPath}/static/layuimini/lib/font-awesome-4.7.0/css/font-awesome.min.css" media="all">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/css/public.css" media="all">
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/base64.js"></script>
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/common.js"></script>
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/xdate/xdate.js"></script>
+    <style>
+        .top-panel {
+            border: 1px solid #eceff9;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .top-panel > .layui-card-body {
+            height: 60px;
+        }
+
+        .top-panel-number {
+            line-height: 60px;
+            font-size: 30px;
+            border-right: 1px solid #eceff9;
+        }
+
+        .top-panel-tips {
+            line-height: 30px;
+            font-size: 12px
+        }
+
+        .bootstrap-elem-field {
+            margin-bottom: 10px;
+            padding: 0;
+            border-width: 1px;
+            border-style: solid;
+            border-color: #e6e6e6;
+        }
+
+        .bootstrap-elem-field legend {
+            margin-left: 20px;
+            padding: 0 10px;
+            font-size: 20px;
+            font-weight: 300;
+            border-bottom: none;
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+<div class="layuimini-main">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-xs12 layui-col-md3">
+
+            <div class="layui-card top-panel">
+                <div class="layui-card-header">总执行器数</div>
+                <div class="layui-card-body">
+                    <div class="layui-row layui-col-space5">
+                        <div class="layui-col-xs9 layui-col-md9 top-panel-number">
+                            9,054,056
+                        </div>
+                        <div class="layui-col-xs3 layui-col-md3 top-panel-tips">
+                            比昨天 <a style="color: #1aa094">▲0.12</a><br>
+                            比七日 <a style="color: #bd3004">▼0.06</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-col-xs12 layui-col-md3">
+
+            <div class="layui-card top-panel">
+                <div class="layui-card-header">总任务数</div>
+                <div class="layui-card-body">
+                    <div class="layui-row layui-col-space5">
+                        <div class="layui-col-xs9 layui-col-md9 top-panel-number">
+                            9,054,056
+                        </div>
+                        <div class="layui-col-xs3 layui-col-md3 top-panel-tips">
+                            比昨天 <a style="color: #1aa094">▲0.12</a><br>
+                            比七日 <a style="color: #bd3004">▼0.06</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-col-xs12 layui-col-md3">
+            <div class="layui-card top-panel">
+                <div class="layui-card-header">总执行日志</div>
+                <div class="layui-card-body">
+                    <div class="layui-row layui-col-space5">
+                        <div class="layui-col-xs9 layui-col-md9 top-panel-number">
+                            9,054,056
+                        </div>
+                        <div class="layui-col-xs3 layui-col-md3 top-panel-tips">
+                            比昨天 <a style="color: #1aa094">▲0.12</a><br>
+                            比七日 <a style="color: #bd3004">▼0.06</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-xs12 layui-col-md3">
+
+            <div class="layui-card top-panel">
+                <div class="layui-card-header">总失败日志</div>
+                <div class="layui-card-body">
+                    <div class="layui-row layui-col-space5">
+                        <div class="layui-col-xs9 layui-col-md9 top-panel-number">
+                            9,054,056
+                        </div>
+                        <div class="layui-col-xs3 layui-col-md3 top-panel-tips">
+                            比昨天 <a style="color: #1aa094">▲0.12</a><br>
+                            比七日 <a style="color: #bd3004">▼0.06</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-xs12 layui-col-md8">
+            <div id="echarts-records" style="background-color:#ffffff;min-height:400px;padding: 10px"></div>
+        </div>
+        <div class="layui-col-xs12 layui-col-md4">
+            <div id="echarts-pies" style="background-color:#ffffff;min-height:400px;padding: 10px"></div>
+        </div>
+    </div>
+
+
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-xs12 layui-col-md12">
+            <div style="background-color:#ffffff;min-height:300px;padding: 10px">
+                <fieldset class="bootstrap-elem-field">
+                    <legend>今日待执行任务</legend>
+                    <div style="margin: 10px 10px 10px 10px">
+                        <table class="layui-hide" id="countTableId"></table>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-xs12 layui-col-md12">
+            <div style="background-color:#ffffff;min-height:300px;padding: 10px">
+                <div style="background-color:#ffffff;min-height:300px;padding: 10px">
+                    <fieldset class="bootstrap-elem-field">
+                        <legend>汇总数据</legend>
+                        <div style="margin: 10px 10px 10px 10px">
+                            <table class="layui-hide" id="sumTableId"></table>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--</div>-->
+    <script src="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+    <script src="${request.contextPath}/static/layuimini/js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+    <script>
+        layui.use(['layer', 'table', 'echarts', 'seaFun'], function () {
+                var $ = layui.jquery,
+                    table = layui.table,
+                    seaFun = layui.seaFun,
+                    echarts = layui.echarts;
+                var now = new XDate();
+                var afterOneDay = now.clone().toString("yyyy-MM-dd 23:59:59");
+                var sevenDayBefore = now.clone().addDays(-6).toString("yyyy-MM-dd 00:00:00");
+                var user = seaFun.queryAuthUser();
+                var permissionJobGroups = [];
+                $.ajax({
+                    type: "GET",
+                    async: false,
+                    url: "${request.contextPath}/jobusergroup/loadPermissionJobGroupsByNames?groupNames=" + user.permissionGroups,
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.code === 200) {
+                            permissionJobGroups = permissionJobGroups.concat(data.content);
+                        }
+                    }
+                });
+                var chartInfo = null;
+                $.ajax({
+                    type: "GET",
+                    async: false,
+                    url: "${request.contextPath}/chartInfoByApp",
+                    data: {
+                        "appNames": permissionJobGroups.toString(),
+                        "startDate": sevenDayBefore,
+                        "endDate": afterOneDay,
+                    },
+                    contentType: "application/json;charset=utf-8",
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.code === 200) {
+                            chartInfo = data.content;
+                        }
+                    }
+                });
+                // 待执行任务
+                table.render({
+                    elem: '#countTableId',
+                    url: '${request.contextPath}/nextTriggerTimeReportByApp',
+                    method: "get",
+                    cols: [[
+                        {field: 'appName', title: '执行器名称'},
+                        {field: 'jobName', title: '待执行任务'},
+                        {field: 'jobDesc', title: '任务描述'},
+                        {field: 'author', title: '负责人'},
+                        {field: 'nextTriggerTime', width: 170, title: '待执行时间'},
+                    ]],
+                    limits: [10, 15, 20, 25, 50, 100],
+                    limit: 10,
+                    page: false,
+                    skin: 'line',
+                    where: {
+                        "appNames": permissionJobGroups.toString(),
+                    },
+                    done: function (res, curr, count) {
+                        $('th').css({'font-weight': 'bold'});
+                    }
+                });
+                // 任务统计
+                table.render({
+                    elem: '#sumTableId',
+                    data: chartInfo,
+                    cols: [[
+                        {field: 'appname', title: '执行器名称'},
+                        {field: 'triggerJobTotal', title: '任务总数'},
+                        {field: 'triggerJobRunningTotal', title: '启动数量'},
+                        {field: 'triggerJobStoppedTotal', title: '停止数量'},
+                        {field: 'triggerCountTotal', title: '调度次数'},
+                        {field: 'triggerCountSucTotal', title: '成功次数'},
+                        {field: 'triggerCountFailTotal', title: '失败次数'},
+                    ]],
+                    limits: [10, 15, 20, 25, 50, 100],
+                    limit: 10,
+                    page: true,
+                    skin: 'line',
+                    where: {
+                        "appNames": permissionJobGroups,
+                    },
+                    done: function (res, curr, count) {
+                        $('th').css({'font-weight': 'bold'});
+                    }
+                });
+                var appNames = [];
+                var seriesData = [];
+                var daysData = new Set();
+                var triggerFailedData = [];
+                if (chartInfo != null) {
+                    for (var i = 0; i < chartInfo.length; i++) {
+                        appNames.push(chartInfo[i].appname);
+                        triggerFailedData.push({value: chartInfo[i].triggerCountFailTotal, name: chartInfo[i].appname});
+                        var seriesItemData = [];
+                        for (var j = 0; j < chartInfo[i].triggerDayMapList.length; j++) {
+                            daysData.add(chartInfo[i].triggerDayMapList[j].triggerDay);
+                            seriesItemData.push(chartInfo[i].triggerDayMapList[j].triggerDayTotal)
+                        }
+                        seriesData.push({
+                            name: chartInfo[i].appname,
+                            type: 'line',
+                            stack: '总量',
+                            areaStyle: {},
+                            label: {
+                                normal: {
+                                    show: true,
+                                    position: 'top'
+                                }
+                            },
+                            data: seriesItemData
+                        });
+                    }
+                }
+                /**
+                 * 报表功能
+                 */
+                var echartsRecords = echarts.init(document.getElementById('echarts-records'), 'walden');
+
+                var optionRecords = {
+                    title: {
+                        text: '执行情况'
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross',
+                            label: {
+                                backgroundColor: '#6a7985'
+                            }
+                        }
+                    },
+                    legend: {
+                        data: appNames
+                    },
+                    toolbox: {
+                        feature: {
+                            saveAsImage: {}
+                        }
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            boundaryGap: false,
+                            data: Array.from(daysData)
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value'
+                        }
+                    ],
+                    series: seriesData,
+                };
+                echartsRecords.setOption(optionRecords);
+                /**
+                 * 玫瑰图表
+                 */
+                var echartsPies = echarts.init(document.getElementById('echarts-pies'), 'dark');
+                var optionPies = {
+                    title: {
+                        text: '调度失败',
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b} : {c} ({d}%)'
+                    },
+                    legend: {
+                        orient: 'vertical',
+                        left: 'left',
+                        data: appNames
+                    },
+                    series: [
+                        {
+                            name: '调度失败',
+                            type: 'pie',
+                            radius: '55%',
+                            center: ['50%', '60%'],
+                            roseType: 'radius',
+                            data: triggerFailedData,
+                            emphasis: {
+                                itemStyle: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                }
+                            }
+                        }
+                    ]
+                };
+                echartsPies.setOption(optionPies);
+
+                // echarts 窗口缩放自适应
+                window.onresize = function () {
+                    echartsRecords.resize();
+                }
+
+            }
+        )
+        ;
+    </script>
+</div>
+</body>
+</html>

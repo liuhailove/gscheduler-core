@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>go-scheduler</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/css/layui.css"
+          media="all">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/css/public.css" media="all">
+    <link rel="stylesheet"
+          href="${request.contextPath}/static/layuimini/lib/font-awesome-4.7.0/css/font-awesome.min.css"
+          media="all">
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/common.js"></script>
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/base64.js"></script>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+        <script type="text/html" id="currentTableBar">
+            <div class="layui-btn-group">
+                <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="change">切换</a>
+            </div>
+        </script>
+    </div>
+</div>
+<script src="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="${request.contextPath}/static/layuimini/js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'table', 'element', 'seaFun'], function () {
+        var $ = layui.jquery,
+            seaFun = layui.seaFun,
+            table = layui.table;
+        var user = seaFun.queryAuthUser();
+        table.render({
+            elem: '#currentTableId',
+            url: '${request.contextPath}/jobplatform/pageList',
+            method: "get",
+            cols: [[
+                {field: 'platformName', title: '平台名称', width: 150},
+                {field: 'platformDesc', title: '描述', width: 150},
+                {field: 'env', title: '环境', width: 65},
+                {field: 'region', title: '区域', width: 65},
+                {title: '操作', minWidth: 80, toolbar: '#currentTableBar', align: "center", fixed: 'right'}
+            ]],
+            limit: 100,
+            page: false,
+            skin: 'line',
+            where: {
+                "platformName": user.permissionPlatforms,
+            },
+            done: function (res, curr, count) {
+                $('th').css({'font-weight': 'bold'});
+            }
+        });
+        table.on('tool(currentTableFilter)', function (obj) {
+            var data = obj.data;
+            var platformName = data.platformName;
+            var platformAddress = data.platformAddress;
+            if (obj.event === 'change') {
+                layer.msg('切换到[' + platformName + ']', function () {
+                    top.location.href = platformAddress;
+                    // window.location.href = platformAddress;
+                });
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

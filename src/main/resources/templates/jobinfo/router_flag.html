@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>go-scheduler</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/css/layui.css"
+          media="all">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/css/public.css" media="all">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-form layuimini-form" lay-filter="form-data">
+    <div class="layui-form-item">
+        <input type="hidden" id="id" name="id">
+        <label class="layui-form-label required">路由标签</label>
+        <div class="layui-input-block">
+            <select name="routerFlag" id="routerFlag" class="layui-select" lay-search>
+                <option value="" selected="">无</option>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+        </div>
+    </div>
+</div>
+<script src="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="${request.contextPath}/static/layuimini/js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'tableSelect', 'seaFun'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$,
+            seaFun = layui.seaFun;
+        var user = seaFun.queryAuthUser();
+        $.ajax({
+            type: "GET",
+            async: false,
+            headers: {"auth0": user.authToken},
+            url: "${request.contextPath}/jobgroup/loadRouterFlags?jobGroup=" + seaFun.getQueryString("jobGroup"),
+            dataType: "json",
+            success: function (data) {
+                if (data.code === 200) {
+                    for (var i = 0; i < data.data.length; i++) {
+                        $("#routerFlag").append("<option value='" + data.data[i] + "'>" + data.data[i] + "</option>");
+                        form.render("select");
+                    }
+                }
+            }
+        });
+        form.render();
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            $.ajax({
+                type: "POST",
+                async: false,
+                headers: {"auth0": user.authToken},
+                url: "${request.contextPath}/jobinfo/updateRouterFlag",
+                data: JSON.stringify({
+                    "id": seaFun.getQueryString("jobId"),
+                    "routerFlag": data.field.routerFlag,
+                }),
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    if (data.code !== 200) {
+                        layer.alert("更新失败【" + data.msg + "】", {
+                            title: '操作结果',
+                            icon: 2
+                        }, function () {
+                        });
+                        return
+                    }
+                    var index = layer.alert("更新成功", {
+                        title: '操作结果',
+                        icon: 1
+                    }, function () {
+                        // 关闭弹出层
+                        layer.close(index);
+                        var iframeIndex = parent.layer.getFrameIndex(window.name);
+                        parent.layer.close(iframeIndex);
+                    });
+                }
+            });
+            return false;
+        });
+    });
+</script>
+</body>
+</html>

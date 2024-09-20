@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>go-scheduler</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/css/layui.css"
+          media="all">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/css/public.css" media="all">
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/common.js"></script>
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/base64.js"></script>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+
+        <fieldset class="table-search-fieldset">
+            <legend>搜索信息</legend>
+            <div style="margin: 10px 10px 10px 10px">
+                <form class="layui-form layui-form-pane" action="">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">查询方式</label>
+                            <div class="layui-input-inline">
+                                <select name="queryLogMethod" id="queryLogMethod">
+                                    <option value="0">仅主日志</option>
+                                    <option value="1">其父日志</option>
+                                    <option value="-1" selected="">全量日志</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">日志ID</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="logId" id="logId" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">执行器</label>
+                            <div class="layui-input-inline">
+                                <select name="appName" id="appName" class="layui-select" lay-search>
+                                    <option value="" selected="">全部</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">任务ID</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="jobId" id="jobId" autocomplete="off" class="layui-input"
+                                       lay-filter="jobSearch">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">实例ID</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="instanceId" id="instanceId" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">执行返回</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="handleMsg" id="handleMsg" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">状态</label>
+                            <div class="layui-input-inline">
+                                <div class="layui-input-inline">
+                                    <select name="logStatus" id="logStatus">
+                                        <option value="0" selected="">全部</option>
+                                        <option value="1">成功</option>
+                                        <option value="2">失败</option>
+                                        <option value="3">进行中</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">执行耗时</label>
+                            <div class="layui-input-inline">
+                                <div class="layui-input-inline">
+                                    <select name="executeTimeAsc" id="executeTimeAsc">
+                                        <option value=""></option>
+                                        <option value="true">升序</option>
+                                        <option value="false">降序</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">调度时间</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="triggerStartTime" id="triggerStartTime"
+                                       lay-verify="triggerStartTime" placeholder="开始时间"
+                                       autocomplete="off" class="layui-input">
+                            </div>
+                            <div class="layui-form-mid">-</div>
+                            <div class="layui-input-inline">
+                                <input type="text" name="triggerEndTime" id="triggerEndTime" lay-verify="triggerEndTime"
+                                       placeholder="结束时间" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-inline" style="padding-left: 110px">
+                            <label class="layui-form-label">排除时间</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="triggerExcludeStartTime" id="triggerExcludeStartTime"
+                                       lay-verify="triggerExcludeStartTime" placeholder="开始时间"
+                                       autocomplete="off" class="layui-input">
+                            </div>
+                            <div class="layui-form-mid">-</div>
+                            <div class="layui-input-inline">
+                                <input type="text" name="triggerExcludeEndTime" id="triggerExcludeEndTime"
+                                       lay-verify="triggerExcludeEndTime"
+                                       placeholder="结束时间" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">日志标签</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="tagName" id="tagName" autocomplete="off"
+                                           class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <button type="reset" class="layui-btn layui-btn-primary">
+                                    重置
+                                </button>
+                                <button type="submit" class="layui-btn layui-btn-normal" lay-submit
+                                        lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </fieldset>
+
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+
+        <script type="text/html" id="currentTableBar">
+            {{# if(d.hasSub === true ){ }}
+            <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="queryChildLog"><i
+                    class="layui-icon layui-icon-search"></i>子日志</a>
+            {{# } }}
+            {{# if(d.triggerCode != 200 || (d.triggerCode ==200 && d.handleCode !=0 && d.handleCode !=200 ) ){ }}
+            <a class="layui-btn layui-btn-xs layui-btn-primary " lay-event="retry">重试</a>
+            {{# } }}
+            {{# if(d.triggerCode ==200 && d.handleCode ==0){ }}
+            <a class="layui-btn layui-btn-xs layui-btn-primary " lay-event="logkill">Kill</a>
+            {{# } }}
+            <a class="layui-btn layui-btn-xs layui-btn-primary " lay-event="processLog">过程日志</a>
+        </script>
+
+    </div>
+</div>
+<script src="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="${request.contextPath}/static/layuimini/js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'table', 'laydate', 'seaFun'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+            seaFun = layui.seaFun,
+            laydate = layui.laydate;
+        var user = seaFun.queryAuthUser();
+        var nowDate = new Date();
+        var y = nowDate.getFullYear();
+        var m = nowDate.getMonth() + 1;
+        var d = nowDate.getDate() + 7;
+
+        var max = y + "-" + m + "-" + d;
+        // 获取三个月前时间
+        nowDate.setMonth(nowDate.getMonth() - 3);
+        var yB = nowDate.getFullYear();
+        var mB = nowDate.getMonth() + 1;
+        var dB = nowDate.getDate();
+        var min = yB + "-" + mB + "-" + dB;
+        //日期
+        laydate.render({
+            elem: '#triggerStartTime',
+            type: 'datetime',
+            max: max,
+            min: min,
+            format: 'yyyy-MM-dd HH:mm:ss',
+            value: new Date((new Date() / 1000 - 86400 * 7) * 1000)
+        });
+        laydate.render({
+            elem: '#triggerEndTime',
+            type: 'datetime',
+            max: max,
+            min: min,
+            format: 'yyyy-MM-dd HH:mm:ss',
+            value: new Date((new Date() / 1000 + 86400) * 1000)
+        });
+        laydate.render({
+            elem: '#triggerExcludeStartTime',
+            type: 'datetime',
+            max: max,
+            min: min,
+            format: 'yyyy-MM-dd HH:mm:ss',
+        });
+        laydate.render({
+            elem: '#triggerExcludeEndTime',
+            type: 'datetime',
+            max: max,
+            min: min,
+            format: 'yyyy-MM-dd HH:mm:ss',
+        });
+        var permissionJobGroups = [];
+        $.ajax({
+            type: "GET",
+            async: false,
+            headers: {"auth0": user.authToken},
+            url: "${request.contextPath}/jobusergroup/loadPermissionJobGroupsByNames?groupNames=" + user.permissionGroups,
+            dataType: "json",
+            success: function (data) {
+                if (data.code === 200) {
+                    permissionJobGroups = permissionJobGroups.concat(data.content);
+                }
+            }
+        });
+        var jobGroupArr = [];
+        $.ajax({
+            type: "GET",
+            async: false,
+            headers: {"auth0": user.authToken},
+            url: "${request.contextPath}/jobgroup/loadFullByAppNames?appNames=" + permissionJobGroups + "&page=1&limit=9999",
+            dataType: "json",
+            success: function (data) {
+                if (data.code === 200) {
+                    for (var i = 0; i < data.data.length; i++) {
+                        jobGroupArr.push(data.data[i].id);
+                        $("#appName").append("<option value='" + data.data[i].id + "'>" + data.data[i].appname + "</option>");
+                        form.render("select");
+                    }
+                }
+            }
+        });
+        var jobId = getQueryString("jobId") === null ? -1 : getQueryString("jobId");
+        if (jobId > 0) {
+            $("#jobId").val(jobId);
+        }
+        var logTable = table.render({
+            elem: '#currentTableId',
+            headers: {"auth0": user.authToken},
+            url: '${request.contextPath}/joblog/pageList',
+            method: "get",
+            toolbar: '#toolbar',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            cols: [[
+                {
+                    field: 'id', width: 190, title: '日志ID', sort: true, fixed: 'left'
+                },
+                {
+                    field: 'parentLog',
+                    width: 180,
+                    title: '父日志',
+                    fixed: 'left',
+                    event: "queryByParentLog",
+                    templet: function (data) {
+                        if (data.parentLog === "0") {
+                            return '-';
+                        }
+                        return "<a href='javascript:' style='color:#0084e9;'>" + data.parentLog + "</a>";
+                    }
+                },
+                {
+                    field: 'jobName', title: '任务名称', width: 200, event: "queryJobInfo", templet: function (data) {
+                        return "<a href='javascript:' style='color:#0084e9;font-weight: bold'>" + data.jobId + "-" + data.jobName + "</a>";
+                    }
+                },
+                {
+                    field: 'triggerType', title: '触发类型', width: 100,
+                    templet: function (data) {
+                        if (data.triggerType === 1) {
+                            return '手动触发';
+                        } else if (data.triggerType === 2) {
+                            return 'CRON';
+                        } else if (data.triggerType === 3) {
+                            return '重试';
+                        } else if (data.triggerType === 4) {
+                            return '父任务';
+                        } else if (data.triggerType === 5) {
+                            return 'API';
+                        } else if (data.triggerType === 6) {
+                            return '错失重试';
+                        } else if (data.triggerType === 7) {
+                            return '请求拒绝重试';
+                        } else if (data.triggerType === 8) {
+                            return '手动重试';
+                        } else {
+                            return "NONE";
+                        }
+                    }
+                },
+                {field: 'triggerTime', width: 170, title: '调度时间'},
+                {
+                    field: 'triggerCode', width: 100, title: '调度结果',
+                    templet: function (data) {
+                        if (data.triggerCode === 200) {
+                            return '<span class="layui-btn layui-btn-primary layui-btn-xs layui-border-blue">成功</span>';
+                        } else if (data.triggerCode === 0) {
+                            return '-';
+                        } else {
+                            return '<span class="layui-btn layui-btn-primary layui-btn-xs layui-border-red">失败</span>';
+                        }
+                    }
+                },
+                {field: 'triggerMsg', width: 250, title: '调度备注'},
+                {field: 'handleTime', width: 170, title: '执行结束时间'},
+                {
+                    field: 'handleCode', width: 100, title: '执行结果',
+                    templet: function (data) {
+                        if (data.handleCode === 200) {
+                            return '<span class="layui-btn layui-btn-primary layui-btn-xs layui-border-blue">成功</span>';
+                        } else if (data.handleCode === 0 || data.handleCode === 201) {
+                            return '-';
+                        } else {
+                            return '<span class="layui-btn layui-btn-primary layui-btn-xs layui-border-red">失败</span>';
+                        }
+                    }
+                },
+                {field: 'handleMsg', width: 200, title: '执行返回'},
+                {
+                    field: 'executeTime', width: 100, title: '执行耗时', templet: function (data) {
+                        if (data.executeTime > 0) {
+                            return data.executeTime;
+                        }
+                        return '-';
+                    }
+                },
+                {field: 'instanceId', width: 320, title: '实例ID'},
+                {field: 'tagName', title: '标签', width: 100},
+                {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "left", fixed: "right"}
+            ]],
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 10,
+            page: true,
+            skin: 'line',
+            where: {
+                "filterTime": new Date((new Date() / 1000 - 86400 * 7) * 1000).format("yyyy-MM-dd HH:mm:ss") + ' - ' + new Date((new Date() / 1000 + 86400) * 1000).format("yyyy-MM-dd HH:mm:ss"),
+                "parentLog": -1,
+                "jobId": jobId,
+                "jobGroups": jobGroupArr,
+            },
+            done: function (res, curr, count) {
+                $('th').each(function (index, element) {
+                    $(element).attr('title', $(element).text());
+                });
+                $('td').each(function (index, element) {
+                    $(element).attr('title', $(element).text());
+                });
+            }
+        });
+        // 监听搜索操作
+        form.on('submit(data-search-btn)', function (data) {
+            var parentLog = 0;
+            var logId = 0;
+            if (data.field.queryLogMethod === "0") {
+                parentLog = 0;
+                logId = data.field.logId;
+            } else if (data.field.queryLogMethod === "-1") {
+                parentLog = -1;
+                logId = data.field.logId;
+            } else if (data.field.queryLogMethod === "1") {
+                parentLog = data.field.logId;
+                logId = -1;
+            }
+            let jobGroups;
+            if (data.field.appName != null && data.field.appName !== "") {
+                jobGroups = data.field.appName;
+            } else {
+                jobGroups = jobGroupArr;
+            }
+            //执行搜索重载
+            table.reload('currentTableId', {
+                page: {
+                    curr: 1
+                },
+                headers: {"auth0": user.authToken},
+                where: {
+                    "jobId": data.field.jobId,
+                    "logStatus": data.field.logStatus,
+                    "logId": logId,
+                    "filterTime": data.field.triggerStartTime + " - " + data.field.triggerEndTime,
+                    "parentLog": parentLog,
+                    "excludeTime": data.field.triggerExcludeStartTime + " - " + data.field.triggerExcludeEndTime,
+                    "executeTimeAsc": data.field.executeTimeAsc,
+                    "handleMsg": data.field.handleMsg,
+                    "instanceId": data.field.instanceId,
+                    "jobGroups": jobGroups,
+                    "tagName": data.field.tagName,
+                }
+            }, 'data');
+            return false;
+        });
+        table.on('tool(currentTableFilter)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'queryChildLog') {
+                var index = layer.open({
+                    title: '子日志-' + data.id,
+                    type: 2,
+                    shade: 0.2,
+                    area: ['60%', '85%'],
+                    maxmin: true,
+                    shadeClose: true,
+                    offset: "r",
+                    content: 'childLogList?logId=' + data.id,
+                });
+                return false;
+            } else if (obj.event === 'retry') {
+                layer.confirm('确认要重试吗', function (index) {
+                    $.ajax({
+                        type: "GET",
+                        headers: {"auth0": user.authToken},
+                        async: false,
+                        url: "${request.contextPath}/joblog/triggerFailed?id=" + data.id,
+                    });
+                    obj.del();
+                    layer.close(index);
+                    //执行搜索重载
+                    table.reload('currentTableId', {
+                        page: {
+                            curr: 1
+                        },
+                        headers: {"auth0": user.authToken},
+                        where: {
+                            "jobId": $("#jobId").val(),
+                            "logStatus": $("#logStatus").val(),
+                            "logId": $("#logId").val(),
+                            "filterTime": $("#triggerStartTime").val() + " - " + $("#triggerEndTime").val(),
+                            "parentLog": $("#logMethod").val(),
+                            "excludeTime": $("#triggerExcludeStartTime").val() + " - " + $("#triggerExcludeEndTime").val(),
+                            "executeTimeAsc": $("#executeTimeAsc").val(),
+                            "handleMsg": $("#handleMsg").val(),
+                            "instanceId": $("#instanceId").val(),
+                            "jobGroups": jobGroupArr,
+                        }
+                    }, 'data');
+                });
+            } else if (obj.event === 'queryJobInfo') {
+                layer.open({
+                    title: '任务明细',
+                    type: 2,
+                    shade: 0.2,
+                    shadeClose: true,
+                    area: ['75%', '80%'],
+                    content: '${request.contextPath}/jobinfo/detail?id=' + data.jobId,
+                });
+            } else if (obj.event === 'processLog') {
+                var index = layer.open({
+                    title: '过程日志-' + data.id,
+                    type: 2,
+                    shade: 0.2,
+                    area: ['60%', '85%'],
+                    maxmin: true,
+                    shadeClose: true,
+                    offset: "r",
+                    content: 'processLogList?logId=' + data.id,
+                });
+                return false;
+            } else if (obj.event === 'logkill') {
+                layer.confirm('确认要kill吗', function (index) {
+                    $.ajax({
+                        type: "GET",
+                        headers: {"auth0": user.authToken},
+                        async: false,
+                        url: "${request.contextPath}/joblog/logKill?id=" + data.id,
+                    });
+                    obj.del();
+                    layer.close(index);
+                    //执行搜索重载
+                    table.reload('currentTableId', {
+                        page: {
+                            curr: 1
+                        },
+                        where: {
+                            "jobId": $("#jobId").val(),
+                            "logStatus": $("#logStatus").val(),
+                            "logId": $("#logId").val(),
+                            "filterTime": $("#triggerStartTime").val() + " - " + $("#triggerEndTime").val(),
+                            "parentLog": $("#logMethod").val(),
+                            "excludeTime": $("#triggerExcludeStartTime").val() + " - " + $("#triggerExcludeEndTime").val(),
+                            "executeTimeAsc": $("#executeTimeAsc").val(),
+                            "handleMsg": $("#handleMsg").val(),
+                            "instanceId": $("#instanceId").val(),
+                            "jobGroups": jobGroupArr,
+                        }
+                    }, 'data');
+                });
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

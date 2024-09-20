@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>go-scheduler</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/css/layui.css"
+          media="all">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/css/public.css" media="all">
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/common.js"></script>
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layui-form" lay-filter="form-data" style="margin-top: 10px">
+        <input type="hidden" id="alarmRuleId" name="alarmRuleId">
+        <div class="layui-form-item">
+            <label class="layui-form-label">脚本名称</label>
+            <div class="layui-input-block">
+                <input type="text" name="scriptName" id="scriptName" value=""
+                       class="layui-input" lay-verify="required">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">告警检查</label>
+            <div class="layui-input-block">
+                <textarea type="text" name="alarmCheckExp" id="alarmCheckExp" value=""
+                          class="layui-textarea" style="min-height: 200px!important;"
+                          lay-verify="required"
+                          placeholder="">
+function alarmCheck(msg, key1, value1, key2, value2, key3, value3) {
+    var result = true;
+    // TODO 增加自身Check逻辑，并把结果赋值给result
+    return result;
+}
+                </textarea>
+                <tip>告警检查方法。
+                    方法内部可以使用JS方法及调度内置方法gsSum(param,condition)或gsCount(condition)。
+                    gsSum(param,condition)param入参只能为alarmCheck入参中的一个。
+                    gsCount(condition)condition入参=左侧只能为alarmCheck入参中的一个。
+                </tip>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">告警消息</label>
+            <div class="layui-input-block">
+                <textarea type="text" class="layui-textarea" name="alarmMsgExp" id="alarmMsgExp" value=""
+                          lay-verify="required"
+                          style="min-height: 200px!important;"
+                          placeholder="">
+function alarmMsg(msg, key1, value1, key2, value2, key3, value3) {
+    var msg = ''
+    // TODO 增加自身Check逻辑，并把结果赋值给result
+    return msg;
+}
+                </textarea>
+                <tip>告警信息。
+                    方法内部可以使用JS方法及调度内置方法gsSum(param,condition)或gsCount(condition)。
+                    gsSum(param,condition)param入参只能为alarmCheck入参中的一个。
+                    gsCount(condition)condition入参=左侧只能为alarmCheck入参中的一个。
+                </tip>
+            </div>
+        </div>
+        <!--        <div class="layui-form-item">-->
+        <!--            <label class="layui-form-label">Cron</label>-->
+        <!--            <div class="layui-input-block">-->
+        <!--                <input type="text" name="cronExp" id="cronExp" value=""-->
+        <!--                       class="layui-input" lay-verify="required">-->
+        <!--            </div>-->
+        <!--        </div>-->
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label" style="width: 90px">检查策略</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <select name="retryType" id="retryType" placeholder="请选择" lay-filter="retryType">
+                        <option value="">请选择检查策略</option>
+                        <option value="1">固定频率模式</option>
+                        <option value="2">用户自定义模式</option>
+                        <option value="4">cron表达式</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline cronExp-container">
+                <label class="layui-form-label" style="width: 90px">cron</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <input type="text" name="cronExp" id="cronExp" value=""
+                           class="layui-input" lay-verify="required" placeholder="请输入当地时区对应的cron表达式">
+                </div>
+            </div>
+            <div class="layui-inline retryConf-container">
+                <label class="layui-form-label" style="width: 90px">策略参数</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <input type="text" name="scriptRetryConf" id="scriptRetryConf" value=""
+                           class="layui-input" lay-verify="required" placeholder="任务成功触发后，按照配置时间">
+                </div>
+            </div>
+            <div class="layui-inline  scriptRetryCount-container">
+                <label class="layui-form-label" style="width: 90px">次数</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <input type="text" name="scriptRetryCount" id="scriptRetryCount" autocomplete="off"
+                           placeholder="请输入整数"
+                           class="layui-input">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="${request.contextPath}/static/layuimini/js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'seaFun'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            seaFun = layui.seaFun,
+            $ = layui.$;
+        var user = seaFun.queryAuthUser();
+        $("#alarmRuleId").val(getQueryString("alarmRuleId"));
+
+        form.render();
+
+        form.on('select(retryType)', function (data) {
+            var retryTypeNew = data.value;
+            var retryConfInput = $("#retryConf");
+            var scriptRetryCount = $("#scriptRetryCount");
+            var scriptRetryConf = $("#scriptRetryConf");
+            var retryConfContainer = $(".retryConf-container");
+            var scriptRetryCountContainer = $(".scriptRetryCount-container");
+            var cronExpContainer = $(".cronExp-container");
+
+            function hideAndRemoveVerify(selector) {
+                selector.hide();
+                selector.find('input').removeAttr('lay-verify');
+            }
+
+            function showAndAddVerify(selector) {
+                selector.show();
+                selector.find('input').attr('lay-verify', 'required');
+            }
+
+            // Reset all elements to their default state
+            retryConfInput.attr("placeholder", "格式:指数初始值,重试最大值");
+            //展示
+            showAndAddVerify(scriptRetryCount);//次数 输入值
+            showAndAddVerify(scriptRetryConf);//策略参数
+            showAndAddVerify(retryConfContainer);//策略参数 字
+            showAndAddVerify(scriptRetryCountContainer);//次数 字
+            //隐藏
+            hideAndRemoveVerify(cronExpContainer);
+
+
+            if (retryTypeNew === '1') {
+                retryConfInput.attr("placeholder", "请输入整数");
+            } else if (retryTypeNew === '2') {
+                retryConfInput.attr("placeholder", "逗号分割，长度于重试次数对应");
+
+            } else if (retryTypeNew === '4') {
+                retryConfInput.attr("placeholder", "仅数据监控支持cron表达式");
+                hideAndRemoveVerify(scriptRetryCountContainer);
+                hideAndRemoveVerify(scriptRetryConf);
+
+                hideAndRemoveVerify(cronExpContainer);
+                hideAndRemoveVerify(retryConfContainer);
+
+                showAndAddVerify(cronExpContainer);//cron表达式 输入值
+
+
+            } else {
+                // Default placeholder is already set
+            }
+        });
+
+
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            $.ajax({
+                type: "POST",
+                async: false,
+                headers: {"auth0": user.authToken},
+                url: "${request.contextPath}/alarm/addScript",
+                data: JSON.stringify({
+                    "alarmRuleId": data.field.alarmRuleId,
+                    "scriptName": data.field.scriptName,
+                    "alarmCheckExp": data.field.alarmCheckExp,
+                    "alarmMsgExp": data.field.alarmMsgExp,
+                    "cronExp": data.field.cronExp,
+                    "scriptRetryConf": data.field.scriptRetryConf,
+                    "retryType": data.field.retryType,
+                    "scriptRetryCount": data.field.scriptRetryCount,
+                }),
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    if (data.code !== 200) {
+                        layer.alert("添加失败【" + data.msg + "】", {
+                            title: '操作结果',
+                            icon: 2
+                        }, function () {
+                        });
+                        return;
+                    }
+                    var index = layer.alert("添加成功", {
+                        title: '操作结果',
+                        icon: 1
+                    }, function () {
+                        // 关闭弹出层
+                        layer.close(index);
+                        var iframeIndex = parent.layer.getFrameIndex(window.name);
+                        parent.layer.close(iframeIndex);
+                    });
+                }
+            });
+            return false;
+        });
+    });
+</script>
+</body>
+</html>

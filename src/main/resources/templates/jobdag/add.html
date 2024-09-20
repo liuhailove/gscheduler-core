@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:v="urn:schemas-microsoft-com:vml">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="renderer" content="webkit">
+    <title>图任务</title>
+    <!--[if lt IE 9]>
+    <?import namespace="v" implementation="#default#VML" ?>
+    <![endif]-->
+    <link rel="stylesheet" href="${request.contextPath}/static/gooflow/dist/GooFlow.min.css"/>
+    <link rel="stylesheet"
+          href="${request.contextPath}/static/layuimini/lib/font-awesome-4.7.0/css/font-awesome.min.css">
+    <script src="${request.contextPath}/static/gooflow/dist/jquery.min.js"></script>
+    <style>
+        /*此处仅为该demo的显示样式，与 GooFlow 无关紧要********start********/
+        body {
+            color: rgb(19, 155, 173);
+            font-family: "Microsoft YaHei", "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        .contaner {
+            padding: 20px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        small {
+            font-size: 75%;
+            color: gray;
+        }
+
+        .row {
+            width: 100%;
+        }
+
+        [class^="col"] {
+            padding: 0 0.5% 1% 0.5%;
+            float: left;
+        }
+
+        .col3 {
+            width: 24%;
+        }
+
+        .col4 {
+            width: 32%;
+        }
+
+        .col6 {
+            width: 49%;
+        }
+
+        .col12 {
+            width: 99%;
+        }
+
+        .clr {
+            clear: both;
+        }
+
+        pre {
+            display: block;
+            padding: 9.5px;
+            margin: 0 0 10px;
+            font-size: 13px;
+            line-height: 1.42857143;
+            color: #333;
+            word-break: break-all;
+            word-wrap: break-word;
+            background-color: #e3e3e3;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+        }
+
+        code {
+            padding: 2px 4px;
+            font-size: 90%;
+            color: #c7254e;
+            border-radius: 4px;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .btn {
+            border-radius: 3px;
+            -webkit-box-shadow: none;
+            box-shadow: none;
+            border: 1px solid transparent;
+            background-color: #3c8dbc;
+            border-color: #367fa9;
+            color: #fff;
+            padding: 6px 12px;
+            cursor: pointer;
+        }
+
+        .text-red {
+            color: #F00 !important;
+        }
+
+        /*此处仅为该demo的显示样式，与 GooFlow 无关紧要********end********/
+    </style>
+</head>
+<body>
+<div class="contaner">
+    <div id="jobDag"></div>
+    <button id="save">保存</button>
+</div>
+
+<!-- jQuery -->
+<script src="${request.contextPath}/static/gooflow/dist/jquery.min.js"></script>
+<script src="${request.contextPath}/static/gooflow/dist/GooFlow.min.js"></script>
+<script>
+    $(function () {
+        var jobDagFlow = $('#jobDag').createGooFlow({
+            initLabelText: "图任务设计", width: 1280,
+            haveTool: true,
+            toolBtns: ["start", "end", "task",],
+            toolBtnRemarks: {cursor: "选择指针", direct: "连线", start: "开始结点", end: "结束结点", task: "任务结点", group:"组织划分框编辑开关"},
+        });
+        $('#save').click(function(event) {
+            console.log(jobDagFlow.exportData());
+        });
+
+    })
+
+</script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>go-scheduler</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/css/layui.css"
+          media="all">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/css/public.css" media="all">
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/common.js"></script>
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/base64.js"></script>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <script type="text/html" id="toolbar">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-normal layui-btn-xs data-add-btn" lay-event="triggerDelayEvent">设置延迟
+                </button>
+            </div>
+        </script>
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+    </div>
+</div>
+<script src="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="${request.contextPath}/static/layuimini/js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'table', 'dropdown', 'miniTab', 'seaFun'], function () {
+        var $ = layui.jquery,
+            table = layui.table,
+            seaFun = layui.seaFun,
+            miniTab = layui.miniTab;
+        miniTab.listen();
+        var user = seaFun.queryAuthUser();
+        var jobInfoTable = table.render({
+            elem: '#currentTableId',
+            headers: {"auth0": user.authToken},
+            url: '${request.contextPath}/jobinfo/triggerDelayList',
+            method: "get",
+            toolbar: '#toolbar',
+            cols: [[
+                {
+                    type: "checkbox", width: 50, fixed: 'left'
+                },
+                {field: 'id', width: 80, title: 'ID', sort: true, fixed: 'left'},
+                {field: 'jobName',  title: '任务名称', fixed: 'left'},
+                {field: 'triggerNextDateTime', title: '下次调度时间', width: 180},
+            ]],
+            done: function (res, curr, count) {
+            },
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 10,
+            page: true,
+            skin: 'line',
+            where: {
+                "jobGroups": getQueryString("ids"),
+            }
+        });
+
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(currentTableFilter)', function (obj) {
+            if (obj.event === 'triggerDelayEvent') {
+                // 监听操作
+                var checkStatus = table.checkStatus('currentTableId')
+                    , data = checkStatus.data;
+                var jobIdes = [];
+                for (var idx in data) {
+                    jobIdes.push(data[idx].id);
+                }
+                var index = layer.open({
+                    title: '设置延迟',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin: false,
+                    shadeClose: true,
+                    area: ['100%', '40%'],
+                    headers: {"auth0": user.authToken},
+                    content: "${request.contextPath}/jobinfo/setDelayRedirect?jobIdes=" + jobIdes,
+                    end: function () {
+                        location.reload();
+                    }
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

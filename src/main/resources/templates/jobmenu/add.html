@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>go-scheduler</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/css/layui.css"
+          media="all">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/css/public.css" media="all">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-form layuimini-form" lay-filter="form-data">
+    <div class="layui-form-item">
+        <label class="layui-form-label required">名称</label>
+        <div class="layui-input-block">
+            <input type="text" name="menuName" id="menuName" lay-verify="required" lay-reqtext="不能为空且不能包含中文" placeholder="请输入名称"
+                   value="" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label required">标题</label>
+        <div class="layui-input-block">
+            <input type="text" name="title" id="title" lay-verify="required" placeholder="请输入标题"
+                   value="" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label required">访问Url</label>
+        <div class="layui-input-block">
+            <input type="text" name="href" id="href" placeholder="请输出访问URL"
+                   value="" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">Icon</label>
+        <div class="layui-input-block">
+            <input type="text" name="icon" id="icon" placeholder="请输入" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">Img</label>
+        <div class="layui-input-block">
+            <input type="text" name="image" id="image" placeholder="请输入" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">父名称</label>
+        <div class="layui-input-block">
+            <input type="text" name="parent" id="parent" placeholder="请输入" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">菜单</label>
+        <div class="layui-input-block">
+            <select name="operator" id="operator" lay-filter="operator">
+                <option value="false">是</option>
+                <option value="true">否</option>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+        </div>
+    </div>
+</div>
+<script src="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="${request.contextPath}/static/layuimini/js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'seaFun'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            seaFun = layui.seaFun,
+            $ = layui.$;
+        var user = seaFun.queryAuthUser();
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            $.ajax({
+                type: "POST",
+                async: false,
+                headers: {"auth0": user.authToken},
+                url: "${request.contextPath}/jobmenu/save",
+                data: JSON.stringify({
+                    "menuName": data.field.menuName,
+                    "title": data.field.title,
+                    "href": data.field.href,
+                    "icon": data.field.icon,
+                    "image": data.field.image,
+                    "parent": data.field.parent,
+                    "operator": data.field.operator,
+                }),
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    if (data.code !== 200) {
+                        layer.alert("添加失败【" + data.msg + "】", {
+                            title: '操作结果',
+                            icon: 2
+                        }, function () {
+                        });
+                        return
+                    }
+                    var index = layer.alert("添加成功", {
+                        title: '操作结果',
+                        icon: 1
+                    }, function () {
+                        // 关闭弹出层
+                        layer.close(index);
+                        var iframeIndex = parent.layer.getFrameIndex(window.name);
+                        parent.layer.close(iframeIndex);
+                    });
+                }
+            });
+            return false;
+        });
+    });
+</script>
+</body>
+</html>

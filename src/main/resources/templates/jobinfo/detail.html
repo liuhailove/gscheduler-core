@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>go-scheduler</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/css/layui.css"
+          media="all">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/css/public.css" media="all">
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/common.js"></script>
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/base64.js"></script>
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+<div class="layuimini-container">
+    <form class="layui-form " action="">
+        <input type="hidden" name="id" id="id">
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 10px;">
+            <legend>基础设置</legend>
+        </fieldset>
+        <div class="layui-form-item" style="margin-top: 20px;">
+            <div class="layui-inline">
+                <label class="layui-form-label required"><label
+                        style="color: red;padding-right: 4px">*</label>执行器</label>
+                <div class="layui-input-inline" style="width: 260px">
+                    <select name="jobGroup" id="jobGroup" class="layui-select" lay-search lay-verify="required"
+                            placeholder="请选择">
+                        <option value="" selected=""></option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label"><label
+                        style="color: red;padding-right: 4px">*</label>任务名称</label>
+                <div class="layui-input-inline" style="width: 300px">
+                    <input type="text" name="jobName" id="jobName" lay-verify="required" autocomplete="off"
+                           placeholder="格式：英文、下划线、数字组合"
+                           class="layui-input">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label"><label
+                        style="color: red;padding-right: 4px">*</label>负责人</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <input type="text" name="author" id="author" lay-verify="required" autocomplete="off"
+                           placeholder="请输入负责人邮箱"
+                           class="layui-input">
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">任务描述</label>
+            <div class="layui-input-block">
+                <input type="text" name="jobDesc" id="jobDesc" lay-verify="required" placeholder="请输入任务描述"
+                       autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><label style="color: red;padding-right: 4px">*</label>调度类型</label>
+                <div class="layui-input-inline" style="width: 260px">
+                    <select name="scheduleType" id="scheduleType" placeholder="请选择"
+                            lay-filter="scheduleType">
+                        <option value="NONE">无</option>
+                        <option value="CRON">Cron</option>
+                        <option value="FIX_RATE">固定速度</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label" id="scheduleConfLabel">调度配置</label>
+                <div class="layui-input-inline" style="width: 300px">
+                    <input type="text" name="scheduleConf" id="scheduleConf" lay-verify="required"
+                           autocomplete="off"
+                           class="layui-input">
+                </div>
+                <div class="layui-form-mid layui-word-aux" id="scheduleConfCron">cron表达式格式例如: * * * * * ? *</div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><label style="color: red;padding-right: 4px">*</label>运行模式</label>
+                <div class="layui-input-inline" style="width: 260px">
+                    <select name="glueType" id="glueType" placeholder="请选择" lay-verify="required">
+                        <option value="BEAN">Go</option>
+                        <option value="GLUE_SHELL">Shell</option>
+                        <option value="GLUE_PYTHON">Python</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label"><label style="color: red;padding-right: 4px">*</label>JobHandler</label>
+                <div class="layui-input-inline" style="width: 300px">
+                    <input type="text" name="executorHandler" id="executorHandler" lay-verify="required"
+                           autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label" style="width: 90px"><label
+                        style="color: red;padding-right: 4px">*</label>路由策略</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <select name="executorRouteStrategy" id="executorRouteStrategy" placeholder="请选择"
+                            lay-filter="executorRouteStrategy">
+                        <option value="FIRST">第一个</option>
+                        <option value="LAST">最后一个</option>
+                        <option value="ROUND">轮询</option>
+                        <option value="RANDOM">随机</option>
+                        <option value="CONSISTENT_HASH">一致性HASH</option>
+                        <option value="LEAST_FREQUENTLY_USED">最不经常使用</option>
+                        <option value="LEAST_RECENTLY_USED">最近经常使用</option>
+                        <option value="FAILOVER">故障转移</option>
+                        <option value="BUSYOVER">忙碌转移</option>
+                        <option value="SHARDING_BROADCAST">分片广播</option>
+                        <option value="MIN_MEMORY_STAT">内存使用率最小</option>
+                        <option value="MIN_CPU_STAT">CPU使用率最小</option>
+                        <option value="MIN_LOAD_STAT">负载最低</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline" id="shardingTypeItem">
+                <label class="layui-form-label" style="width: 90px">分片模式</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <select name="shardingType" id="shardingType" placeholder="请选择" lay-verify="required"
+                            lay-filter="shardingType">
+                        <option value="0">执行器节点数</option>
+                        <option value="1">自定义节点数</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline" id="shardingNumItem">
+                <label class="layui-form-label" style="width: 90px">分片数量</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <input type="text" name="shardingNum" id="shardingNum" autocomplete="off"
+                           placeholder="请输入不大于100的整数"
+                           lay-verify="required"
+                           class="layui-input">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label" style="width: 95px"><label
+                        style="color: red;padding-right: 4px">*</label>调度过期策略</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <select name="misfireStrategy" id="misfireStrategy" placeholder="请选择" lay-verify="required">
+                        <option value="DO_NOTHING">忽略</option>
+                        <option value="FIRE_ONCE_NOW">立即执行一次</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label" style="width: 95px"><label
+                        style="color: red;padding-right: 4px">*</label>阻塞处理策略</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <select name="executorBlockStrategy" id="executorBlockStrategy" placeholder="请选择"
+                            lay-verify="required">
+                        <option value="SERIAL_EXECUTION">单机串行</option>
+                        <option value="CONCURRENT_EXECUTION">单机并行</option>
+                        <option value="DISCARD_LATER">丢弃后续任务</option>
+                        <option value="COVER_EARLY">覆盖前一任务</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+            <legend>告警设置</legend>
+        </fieldset>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><label style="color: red;padding-right: 2px">*</label>预警seatalk</label>
+            <div class="layui-input-block">
+                <input type="text" name="alarmSeatalk" value="" class="layui-input" placeholder="为空则和执行器配置一致"
+                       lay-verify="required">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">报警邮件</label>
+            <div class="layui-input-block">
+                <input type="text" name="alarmEmail" id="alarmEmail" autocomplete="off"
+                       placeholder="请输出报警邮件，多个邮件地址逗号分割"
+                       class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label" style="width: 90px">执行耗时告警</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <input type="text" name="executorThreshold" id="executorThreshold"
+                           autocomplete="off" placeholder="单位秒"
+                           class="layui-input">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label" style="width: 90px">重试告警静默</label>
+                <div class="layui-input-inline">
+                    <input type="radio" name="finalFailedSendAlarm" id="finalFailedSendAlarm1" value="true" title="打开">
+                    <input type="radio" name="finalFailedSendAlarm" id="finalFailedSendAlarm2" value="false" title="关闭"
+                           checked="">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 90px">启动超时阈值</label>
+            <div class="layui-input-inline">
+                <input type="number" name="startExecutorToleranceThresholdInMin"
+                       id="startExecutorToleranceThresholdInMin" autocomplete="off"
+                       placeholder="请输入正整数"
+                       class="layui-input">
+            </div>
+            <div class="layui-form-mid layui-word-aux">单位(分钟).如果任务启动运行的时刻减任务下发时间>阈值，则发送告警.0表示没有限制</div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 90px">告警静默</label>
+            <div class="layui-input-inline">
+                <input type="number" name="alarmSilence" id="alarmSilence" autocomplete="off"
+                       placeholder=""
+                       class="layui-input">
+            </div>
+            <div class="layui-form-mid layui-word-aux">单位(分钟).在静默期内，多次失败只会告警一次</div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 90px">已运行告警</label>
+            <div class="layui-input-inline">
+                <input type="radio" name="taskRunningAlarm" id="taskRunningAlarm1" value="true" title="打开" checked="">
+                <input type="radio" name="taskRunningAlarm" id="taskRunningAlarm2" value="false" title="关闭">
+            </div>
+            <div class="layui-form-mid layui-word-aux">关闭此开关，重复下发的任务不会在触发告警</div>
+        </div>
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+            <legend>高级设置</legend>
+        </fieldset>
+        <div class="layui-form-item">
+            <label class="layui-form-label">父任务传参</label>
+            <div class="layui-input-block">
+                <div class="layui-input-inline">
+                    <input type="radio" name="paramFromParent" id="paramFromParent1" value="true" title="启用"
+                           lay-filter="paramFromParent">
+                    <input type="radio" name="paramFromParent" id="paramFromParent2" value="false" title="禁用"
+                           checked="" lay-filter="paramFromParent">
+                </div>
+                <div class="layui-form-mid layui-word-aux">启用时，任务参数来自父任务，自身参数不可编辑</div>
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">任务参数</label>
+            <div class="layui-input-block">
+                <textarea placeholder="请输入任务参数" class="layui-textarea" name="executorParam"
+                          id="executorParam"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">附加参数</label>
+            <div class="layui-input-block">
+                <textarea placeholder="请输入附加参数" class="layui-textarea" name="additionalParams"
+                          id="additionalParams"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label" style="width: 90px">子任务ID</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <input type="text" name="childJobId" id="childJobId" autocomplete="off"
+                           placeholder="多个使用逗号分割"
+                           class="layui-input">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label" style="width: 90px">告警电话</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <input type="text" name="voiceAlarmTels" id="voiceAlarmTels" autocomplete="off"
+                           placeholder="nonlive慎用，多个电话使用,分割，仅支持大陆电话，且电话不需要86前缀"
+                           class="layui-input">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label" style="width: 90px">超时取消时间</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <input type="number" name="executorTimeout" id="executorTimeout"
+                           autocomplete="off" placeholder="单位秒，大于0时生效"
+                           class="layui-input">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label" style="width: 90px">失败重试策略</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <select name="retryType" id="retryType" placeholder="请选择" lay-filter="retryType">
+                        <option value=""></option>
+                        <option value="1">固定频率模式</option>
+                        <option value="2">用户自定义模式</option>
+                        <option value="3">指数退避模式</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label" style="width: 90px">重试策略参数</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <input type="text" name="retryConf" id="retryConf" autocomplete="off"
+                           placeholder="请输入整数"
+                           class="layui-input">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label" style="width: 90px">失败重试次数</label>
+                <div class="layui-input-inline" style="width: 250px">
+                    <input type="number" name="executorFailRetryCount" id="executorFailRetryCount" autocomplete="off"
+                           placeholder="请输入整数"
+                           class="layui-input">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 90px">任务下发阈值</label>
+            <div class="layui-input-inline">
+                <input type="number" name="dispatchThreshold" id="dispatchThreshold" autocomplete="off"
+                       placeholder="请输入小于5000整数"
+                       class="layui-input">
+            </div>
+            <div class="layui-form-mid layui-word-aux">单位(每秒).仅在启用"参数来自父任务"时才生效，为0时表示无限制</div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 90px">日志保留天数</label>
+            <div class="layui-input-inline">
+                <input type="number" name="logRetentionDays" id="logRetentionDays" autocomplete="off"
+                       placeholder="请输入"
+                       class="layui-input">
+            </div>
+            <div class="layui-form-mid layui-word-aux">保留时间为MIN(设置时间，系统时间)，为0表示为系统时间</div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 90px">调度结果回查</label>
+            <div class="layui-input-inline">
+                <input type="radio" name="resultCheck" id="resultCheck1" value="true" title="启用">
+                <input type="radio" name="resultCheck" id="resultCheck2" value="false" title="禁用" checked="">
+            </div>
+            <div class="layui-form-mid layui-word-aux">启用时，需要业务重写</div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width: 90px">等待父任务 </label>
+                <div class="layui-input-inline">
+                    <input type="radio" name="beginAfterParent" id="beginAfterParent1" value="true" title="等待">
+                    <input type="radio" name="beginAfterParent" id="beginAfterParent2" value="false" title="不等待"
+                           checked="">
+                </div>
+                <div class="layui-form-mid layui-word-aux">类型为等待时，只有在父任务结束后，才启动子任务，不支持多父任务场景</div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit="" lay-filter="saveBtn">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<script src="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="${request.contextPath}/static/layuimini/js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'seaFun'], function () {
+        var form = layui.form,
+            seaFun = layui.seaFun,
+            $ = layui.$;
+        var user = seaFun.queryAuthUser();
+        var permissionJobGroups = [];
+        $.ajax({
+            type: "GET",
+            async: false,
+            headers: {"auth0": user.authToken},
+            url: "${request.contextPath}/jobusergroup/loadPermissionJobGroupsByNames?groupNames=" + user.permissionGroups,
+            dataType: "json",
+            success: function (data) {
+                if (data.code === 200) {
+                    permissionJobGroups = permissionJobGroups.concat(data.content);
+                }
+            }
+        });
+        var jobGroupArr = [];
+        $.ajax({
+            type: "GET",
+            async: false,
+            headers: {"auth0": user.authToken},
+            url: "${request.contextPath}/jobgroup/loadFullByAppNames?appNames=" + permissionJobGroups + "&page=1&limit=9999",
+            dataType: "json",
+            success: function (data) {
+                if (data.code === 200) {
+                    for (var i = 0; i < data.data.length; i++) {
+                        jobGroupArr.push(data.data[i].id);
+                        $("#jobGroup").append("<option value='" + data.data[i].id + "'>" + data.data[i].appname + "</option>");
+                        form.render("select");
+                    }
+                }
+            }
+        });
+        $.ajax({
+            type: "GET",
+            async: false,
+            headers: {"auth0": user.authToken},
+            url: "${request.contextPath}/jobinfo/loadById?id=" + getQueryString("id"),
+            dataType: "json",
+            success: function (data) {
+                $("#id").val(data.content.id);
+                $("#jobGroup").val(data.content.jobGroup);
+                $("#jobName").val(data.content.jobName);
+                $("#author").val(data.content.author);
+                $("#alarmEmail").val(data.content.alarmEmail);
+                $("#scheduleType").val(data.content.scheduleType);
+                $("#scheduleType").val(data.content.scheduleType);
+                $("#voiceAlarmTels").val(data.content.voiceAlarmTels);
+                if (data.content.scheduleType === 'NONE') {
+                    $("#scheduleConf").css('display', 'none');
+                    $("#scheduleConfCron").css('display', 'none');
+                    $("#scheduleConfLabel").css('display', 'none');
+                } else if (data.content.scheduleType === 'CRON') {
+                    $("#scheduleConf").css('display', 'block');
+                    $("#scheduleConfCron").css('display', 'block');
+                } else {
+                    $("#scheduleConf").css('display', 'block');
+                    $("#scheduleConfCron").css('display', 'none');
+                }
+                $("#glueType").val(data.content.glueType);
+                $("#glueType").attr("disabled", "disabled");
+                $("#glueType").attr("readonly", "readonly");
+                $("#executorHandler").val(data.content.executorHandler);
+                if (data.content.paramFromParent === true) {
+                    $("#paramFromParent1").attr('checked', 'checked');
+                    $("#executorParam").attr("disabled", "disabled");
+                    $("#executorParam").attr("readonly", "readonly");
+                } else {
+                    $("#paramFromParen2").attr('checked', 'checked');
+                    $("#executorParam").removeAttr("disabled");
+                    $("#executorParam").removeAttr("readonly");
+                }
+                $("#executorParam").val(data.content.executorParam);
+                $("#jobDesc").val(data.content.jobDesc);
+                $("#executorRouteStrategy").val(data.content.executorRouteStrategy);
+                $("#shardingType").val(data.content.shardingType);
+                $("#shardingNum").val(data.content.shardingNum);
+                if (data.content.executorRouteStrategy !== "SHARDING_BROADCAST") {
+                    $("#shardingTypeItem").css('display', 'none');
+                    $("#shardingNumItem").css('display', 'none');
+                } else if (data.content.executorRouteStrategy === "SHARDING_BROADCAST" && data.content.shardingType !== 1) {
+                    $("#shardingTypeItem").css('display', 'block');
+                    $("#shardingNumItem").css('display', 'none');
+                } else if (data.content.executorRouteStrategy === "SHARDING_BROADCAST" && data.content.shardingType === 1) {
+                    $("#shardingTypeItem").css('display', 'block');
+                    $("#shardingNumItem").css('display', 'block');
+                }
+                $("#misfireStrategy").val(data.content.misfireStrategy);
+                $("#executorBlockStrategy").val(data.content.executorBlockStrategy);
+                $("#childJobId").val(data.content.childJobId);
+                $("#executorTimeout").val(data.content.executorTimeout);
+                $("#executorThreshold").val(data.content.executorThreshold);
+                $("#retryType").val(data.content.retryType);
+                if (data.content.retryType === '1') {
+                    $("#retryConf").attr("placeholder", "请输入整数");
+                } else if (data.content.retryType === '2') {
+                    $("#retryConf").attr("placeholder", "逗号分割，长度于重试次数对应");
+                } else {
+                    $("#retryConf").attr("placeholder", "格式:指数初始值,重试最大值");
+                }
+                $("#retryConf").val(data.content.retryConf);
+                $("#executorFailRetryCount").val(data.content.executorFailRetryCount);
+                if (data.content.finalFailedSendAlarm === true) {
+                    $("#finalFailedSendAlarm1").attr('checked', 'checked');
+                } else {
+                    $("#finalFailedSendAlarm2").attr('checked', 'checked');
+                }
+                if (data.content.taskRunningAlarm === true) {
+                    $("#taskRunningAlarm1").attr('checked', 'checked');
+                } else {
+                    $("#taskRunningAlarm2").attr('checked', 'checked');
+                }
+                if (data.content.beginAfterParent === true) {
+                    $("#beginAfterParent1").attr('checked', 'checked');
+                } else {
+                    $("#beginAfterParent2").attr('checked', 'checked');
+                }
+                if (data.content.resultCheck === true) {
+                    $("#resultCheck1").attr('checked', 'checked');
+                } else {
+                    $("#resultCheck2").attr('checked', 'checked');
+                }
+                $("#dispatchThreshold").val(data.content.dispatchThreshold);
+                $("#logRetentionDays").val(data.content.logRetentionDays);
+                $("#startExecutorToleranceThresholdInMin").val(data.content.startExecutorToleranceThresholdInMin);
+                $("#alarmSilence").val(data.content.alarmSilence);
+            }
+        });
+        form.render();
+
+    });
+</script>
+</body>
+</html>

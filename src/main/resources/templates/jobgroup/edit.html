@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>go-scheduler</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/css/layui.css"
+          media="all">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/css/public.css" media="all">
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/common.js"></script>
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/base64.js"></script>
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-form layuimini-form" lay-filter="form-data">
+    <input type="hidden" id="id" name="id">
+    <div class="layui-form-item">
+        <label class="layui-form-label required">App Name</label>
+        <div class="layui-input-block">
+            <input type="text" name="appname" id="appname" lay-verify="required" lay-reqtext="应用名称不能为空"
+                   placeholder="请输入应用名称"
+                   value="" class="layui-input">
+            <tip>应用名称必须唯一且和业务注册名保持一致</tip>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label required">名称</label>
+        <div class="layui-input-block">
+            <input type="text" name="title" id="title" lay-verify="required" lay-reqtext="名称不能为空" placeholder="请输入名称"
+                   value="" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">分组</label>
+        <div class="layui-input-block">
+            <input type="text" name="ugroups" placeholder="请输入" autocomplete="off" class="layui-input"
+                   id="ugroups" value="" ts-selected="">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label required">注册方式</label>
+        <div class="layui-input-block">
+            <select name="addressType" id="addressType" lay-filter="addressType">
+                <option value=""></option>
+                <option value="0">自动注册</option>
+                <option value="1">手动录入</option>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">预警seatalk</label>
+        <div class="layui-input-block">
+            <input type="text" name="alarmSeatalk" id="alarmSeatalk"
+                   value="" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">黑名单ip</label>
+        <div class="layui-input-block">
+            <input type="text" name="blackAddressList" id="blackAddressList" lay-reqtext="多个IP地址逗号分割"
+                   placeholder="请输入黑名单地址，格式：ip+端口"
+                   value="" class="layui-input">
+            <tip>格式：ip+端口，多个地址英文逗号分割</tip>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">值班告警策略</label>
+        <div class="layui-input-block">
+            <select name="alertNotificationWay" class="layui-select">
+                <option value="">请选择</option>
+                <option value="0">不@任何值班人员</option>
+                <option value="1">任务失败时通知主DoD</option>
+                <option value="2">任务失败时通知备用DoD,不存在则通知主DoD</option>
+            </select>
+            <tip>选择值班告警策略</tip>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">dodTimeId</label>
+        <div class="layui-input-block">
+            <input type="text" name="dodTeamId" lay-reqtext="输入dod 平台分配的team id"
+                   placeholder="输入dod 平台分配的team id"
+                   value="" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">日报接收邮箱</label>
+        <div class="layui-input-block">
+            <input type="text" name="reportReceiver" id="reportReceiver" lay-reqtext="多个邮箱逗号分割"
+                   placeholder="请输入日报接收邮箱"
+                   value="" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">Token生效时间</label>
+        <div class="layui-input-block">
+            <input type="text" name="tokenEffectiveDate" id="tokenEffectiveDate"
+                   autocomplete="off" class="layui-input" placeholder="启用Token验证时设置此参数">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+        </div>
+    </div>
+</div>
+<script src="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="${request.contextPath}/static/layuimini/js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'laydate', 'tableSelect', 'seaFun'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$,
+            seaFun = layui.seaFun,
+            laydate = layui.laydate,
+            tableSelect = layui.tableSelect;
+        //日期
+        laydate.render({
+            elem: '#tokenEffectiveDate',
+            type: 'datetime',
+            format: 'yyyy-MM-dd HH:mm:ss',
+        });
+        var user = seaFun.queryAuthUser();
+        tableSelect.render({
+            elem: '#ugroups',
+            checkedKey: 'groupName',
+            height: '300',
+            width: '400',
+            table: {
+                headers: {"auth0": user.authToken},
+                url: "${request.contextPath}/jobusergroup/pageList?groupNames=" + user.permissionGroups,
+                cols: [[
+                    {type: 'checkbox'},
+                    {field: 'groupName', title: '分组名称', width: 200},
+                    {field: 'permissionPlatforms', title: '访问平台', width: 200}
+                ]]
+            },
+            done: function (elem, data) {
+                var NEWJSON = []
+                layui.each(data.data, function (index, item) {
+                    NEWJSON.push(item.groupName)
+                })
+                elem.val(NEWJSON.join(","))
+            }
+        });
+        $.ajax({
+            type: "GET",
+            async: false,
+            url: "${request.contextPath}/jobgroup/loadById?id=" + getQueryString("id"),
+            dataType: "json",
+            headers: {"auth0": user.authToken},
+            success: function (data) {
+                $("#id").val(data.content.id);
+                $("#appname").val(data.content.appname);
+                $("#title").val(data.content.title);
+                $("#ugroups").val(data.content.ugroups);
+                $("#ugroups").attr("ts-selected", data.content.ugroups);
+                $("#addressType").val(data.content.addressType);
+                $("#alarmSeatalk").val(data.content.alarmSeatalk);
+                $("#blackAddressList").val(data.content.blackAddressList);
+                $("#dodTeamId").val(data.content.dodTeamId);
+                $("#alertNotificationWay").val(data.content.alertNotificationWay);
+                $("#reportReceiver").val(data.content.reportReceiver);
+                $("#tokenEffectiveDate").val(data.content.tokenEffectiveDate);
+            }
+        });
+        form.render();
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            $.ajax({
+                type: "POST",
+                async: false,
+                headers: {"auth0": user.authToken},
+                url: "${request.contextPath}/jobgroup/update",
+                data: JSON.stringify({
+                    "id": data.field.id,
+                    "appname": data.field.appname,
+                    "title": data.field.title,
+                    "addressType": data.field.addressType,
+                    "alarmSeatalk": data.field.alarmSeatalk,
+                    "blackAddressList": data.field.blackAddressList,
+                    "alertNotificationWay": data.field.alertNotificationWay,
+                    "dodTeamId": data.field.dodTeamId,
+                    "reportReceiver": data.field.reportReceiver,
+                    "ugroups": data.field.ugroups,
+                    "tokenEffectiveDate": data.field.tokenEffectiveDate
+                }),
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    if (data.code !== 200) {
+                        layer.alert("编辑失败【" + data.msg + "】", {
+                            title: '操作结果',
+                            icon: 2
+                        }, function () {
+                        });
+                        return;
+                    }
+                    var index = layer.alert("编辑成功", {
+                        title: '操作结果',
+                        icon: 1
+                    }, function () {
+                        // 关闭弹出层
+                        layer.close(index);
+                        var iframeIndex = parent.layer.getFrameIndex(window.name);
+                        parent.layer.close(iframeIndex);
+                    });
+                }
+            });
+            return false;
+        });
+    });
+</script>
+</body>
+</html>

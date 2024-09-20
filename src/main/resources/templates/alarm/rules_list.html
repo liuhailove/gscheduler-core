@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>go-scheduler</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/css/layui.css"
+          media="all">
+    <link rel="stylesheet" href="${request.contextPath}/static/layuimini/css/public.css" media="all">
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/common.js"></script>
+    <script type="text/javascript" src="${request.contextPath}/static/layuimini/js/base64.js"></script>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <fieldset class="table-search-fieldset">
+            <legend>搜索信息</legend>
+            <div style="margin: 10px 10px 10px 10px">
+                <form class="layui-form layui-form-pane" action="">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">执行器</label>
+                            <div class="layui-input-inline">
+                                <select name="appName" id="appName" class="layui-select" lay-search>
+                                    <option value="" selected="">全部</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">告警名称</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="alarmName" id="alarmName" autocomplete="off"
+                                       class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">资源类型</label>
+                            <div class="layui-input-inline">
+                                <select name="resourceType" id="resourceType" class="layui-select" lay-search>
+                                    <option value="" selected="">全部</option>
+                                    <option value="1">执行日志</option>
+                                    <option value="2">过程日志</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">告警级别</label>
+                            <div class="layui-input-inline">
+                                <select name="alarmLevel" id="alarmLevel" class="layui-select" lay-search>
+                                    <option value="" selected="">全部</option>
+                                    <option value="1">通知</option>
+                                    <option value="2">告警</option>
+                                    <option value="3">严重</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <button type="reset" class="layui-btn layui-btn-primary ">重置</button>
+                            <button type="submit" class="layui-btn layui-btn-normal" lay-submit
+                                    lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </fieldset>
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+        <script type="text/html" id="toolbar">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-normal layui-btn-xs data-add-btn" lay-event="add">新增</button>
+            </div>
+        </script>
+        <script type="text/html" id="currentTableBar">
+            <div class="layui-btn-group">
+                {{# if(d.resourceType === 2 || d.resourceType === 4){ }}
+                <a class="layui-btn layui-btn-primary layui-btn-xs data-count-edit"
+                   lay-event="alarmScriptList">脚本规则</a>
+                {{# } }}
+                <a class="layui-btn layui-btn-primary layui-btn-xs data-count-edit" lay-event="alarmItem">规则明细</a>
+                <a class="layui-btn layui-btn-primary layui-btn-xs data-count-edit"
+                   lay-event="protectEvent">防护事件</a>
+                <a class="layui-btn layui-btn-primary layui-btn-xs data-count-edit"
+                   lay-event="relatedResource">关联资源</a>
+                <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="edit">编辑</a>
+                <a class="layui-btn layui-btn-danger layui-btn-xs  data-count-delete" lay-event="delete">删除</a>
+            </div>
+        </script>
+    </div>
+</div>
+<script src="${request.contextPath}/static/layuimini/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="${request.contextPath}/static/layuimini/js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'table', 'element', 'miniTab', 'seaFun'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+            seaFun = layui.seaFun,
+            miniTab = layui.miniTab;
+        miniTab.listen();
+        var user = seaFun.queryAuthUser();
+        var permissionJobGroups = [];
+        $.ajax({
+            type: "GET",
+            async: false,
+            headers: {"auth0": user.authToken},
+            url: "${request.contextPath}/jobusergroup/loadPermissionJobGroupsByNames?groupNames=" + user.permissionGroups,
+            dataType: "json",
+            success: function (data) {
+                if (data.code === 200) {
+                    permissionJobGroups = permissionJobGroups.concat(data.content);
+                }
+            }
+        });
+        var jobGroupArr = [];
+        $.ajax({
+            type: "GET",
+            async: false,
+            headers: {"auth0": user.authToken},
+            url: "${request.contextPath}/jobgroup/loadFullByAppNames?appNames=" + permissionJobGroups + "&page=1&limit=9999",
+            dataType: "json",
+            success: function (data) {
+                if (data.code === 200) {
+                    for (var i = 0; i < data.data.length; i++) {
+                        jobGroupArr.push(data.data[i].id);
+                        $("#appName").append("<option value='" + data.data[i].id + "'>" + data.data[i].appname + "</option>");
+                        form.render("select");
+                    }
+                }
+            }
+        });
+        table.render({
+            elem: '#currentTableId',
+            headers: {"auth0": user.authToken},
+            url: '${request.contextPath}/alarm/rules',
+            method: "get",
+            toolbar: '#toolbar',
+            cols: [[
+                {field: 'id', title: 'ID', sort: true, fixed: 'left', width: 60},
+                {field: 'jobGroupName', title: '执行器', sort: true, fixed: 'left', width: 180},
+                {field: 'alarmName', title: '告警名称', fixed: 'left', width: 200},
+                {
+                    field: 'alarmLevel', title: '告警级别', templet: function (data) {
+                        if (data.alarmLevel === 1) {
+                            return '<font color="green">通知</font>';
+                        } else if (data.alarmLevel === 2) {
+                            return '<font color="yellow">告警</font>';
+                        } else {
+                            return '<font color="red">严重</font>';
+                        }
+                    }
+                },
+                {
+                    field: 'resourceType', title: '资源类型', templet: function (data) {
+                        if (data.resourceType === 1) {
+                            return "执行日志";
+                        } else if (data.resourceType === 2) {
+                            return "过程日志";
+                        } else if (data.resourceType === 4) {
+                            return "数据监控";
+                        }else {
+                            return "UNKNOWN";
+                        }
+                    }
+                },
+                {
+                    field: 'triggerCondition', title: '告警条件', templet: function (data) {
+                        if (data.triggerCondition === 0) {
+                            return '任意';
+                        } else if (data.triggerCondition === 1) {
+                            return '所有';
+                        }
+                    }
+                },
+                {
+                    field: 'open', title: "状态", templet: function (data) {
+                        if (data.open === false) {
+                            return '关闭';
+                        } else if (data.open === true) {
+                            return '开启';
+                        }
+                    }
+                },
+                {field: 'jobIdes', title: '关联任务'},
+                {title: '操作', minWidth: 320, toolbar: '#currentTableBar', align: "center", fixed: 'right'}
+            ]],
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 10,
+            page: true,
+            skin: 'line',
+            where: {
+                "jobGroups": jobGroupArr.join(","),
+            }
+        });
+        // 监听搜索操作
+        form.on('submit(data-search-btn)', function (data) {
+            let jobGroups;
+            if (data.field.appName != null && data.field.appName !== "") {
+                jobGroups = data.field.appName;
+            } else {
+                jobGroups = jobGroupArr.join(",");
+            }
+            //执行搜索重载
+            table.reload('currentTableId', {
+                page: {
+                    curr: 1
+                },
+                headers: {"auth0": user.authToken},
+                where: {
+                    "app": data.field.app,
+                    "alarmName": data.field.alarmName,
+                    "resourceType": data.field.resourceType,
+                    "alarmLevel": data.field.alarmLevel,
+                    "jobGroups": jobGroups,
+                }
+            }, 'data');
+            return false;
+        });
+        //toolbar监听事件
+        table.on('toolbar(currentTableFilter)', function (obj) {
+            if (obj.event === 'add') {  // 监听添加操作
+                var index = layer.open({
+                    title: '新增',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin: false,
+                    shadeClose: true,
+                    area: ['50%', '75%'],
+                    content: 'add',
+                    end: function () {
+                        location.reload();
+                    }
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+            }
+        });
+        table.on('tool(currentTableFilter)', function (obj) {
+            if (obj.event === 'alarmItem') {
+                var index = layer.open({
+                    title: '规则明细',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin: true,
+                    shadeClose: true,
+                    area: ['100%', '100%'],
+                    content: 'alarmItem?id=' + obj.data.id + "&resourceType=" + obj.data.resourceType,
+                    end: function () {
+                        layer.close(index);
+                    }
+                });
+            } else if (obj.event === 'relatedResource') {
+                var index = layer.open({
+                    title: '关联资源',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin: true,
+                    shadeClose: true,
+                    area: ['35%', '70%'],
+                    content: '${request.contextPath}/alarm/relatedResource?id=' + obj.data.id + "&jobGroupId=" + obj.data.jobGroupId + "&jobIdes=" + obj.data.jobIdes,
+                    end: function () {
+                        layer.close(index);
+                        //执行搜索重载
+                        table.reload('currentTableId', {
+                            page: {
+                                curr: 1
+                            },
+                            headers: {"auth0": user.authToken},
+                            where: {
+                                "app": $("#app").val(),
+                                "alarmName": $("#alarmName").val(),
+                                "resourceType": $("#resourceType").val(),
+                                "alarmLevel": $("#alarmLevel").val(),
+                                "jobGroups": jobGroupArr.join(","),
+                            }
+                        }, 'data');
+                    }
+                });
+            } else if (obj.event === 'edit') {
+                var index = layer.open({
+                    title: '编辑',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin: false,
+                    shadeClose: true,
+                    area: ['50%', '75%'],
+                    content: 'edit?id=' + obj.data.id + "&resourceType=" + obj.data.resourceType,
+                    end: function () {
+                        layer.close(index);
+                        //执行搜索重载
+                        table.reload('currentTableId', {
+                            page: {
+                                curr: 1
+                            },
+                            headers: {"auth0": user.authToken},
+                            where: {
+                                "app": $("#app").val(),
+                                "alarmName": $("#alarmName").val(),
+                                "resourceType": $("#resourceType").val(),
+                                "alarmLevel": $("#alarmLevel").val(),
+                                "jobGroups": jobGroupArr.join(","),
+                            }
+                        }, 'data');
+                    }
+                });
+            } else if (obj.event === 'delete') {
+                layer.confirm('确认删除', {icon: 3, title: '提示'}, function (index) {
+                    $.ajax({
+                        type: "GET",
+                        async: false,
+                        headers: {"auth0": user.authToken},
+                        url: "${request.contextPath}/alarm/remove?id=" + obj.data.id,
+                        success: function (data) {
+                            if (data.code !== 200) {
+                                layer.alert(data.msg, {
+                                    title: '失败',
+                                    icon: 3
+                                });
+                            }
+                        },
+                    });
+                    layer.close(index);
+                    //执行搜索重载
+                    table.reload('currentTableId', {
+                        headers: {"auth0": user.authToken},
+                        where: {
+                            "app": $("#app").val(),
+                            "alarmName": $("#alarmName").val(),
+                            "resourceType": $("#resourceType").val(),
+                            "alarmLevel": $("#alarmLevel").val(),
+                            "jobGroups": jobGroupArr.join(","),
+                        }
+                    }, 'data');
+                });
+                return false;
+            } else if (obj.event === 'protectEvent') {
+                miniTab.openNewTabByIframe({
+                    href: '${request.contextPath}/protect/list?app=' + obj.data.jobGroupName,
+                    title: "防护事件",
+                });
+                return false;
+            } else if (obj.event === 'alarmScriptList') {
+                var index = layer.open({
+                    title: '脚本规则',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin: true,
+                    shadeClose: true,
+                    area: ['100%', '100%'],
+                    content: 'alarmScriptList?id=' + obj.data.id,
+                    end: function () {
+                        layer.close(index);
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
