@@ -905,7 +905,7 @@ public class JdbcIndexedSessionRepository
             while (rs.next()) {
                 String id = rs.getString("SESSION_ID");
                 JdbcSession session;
-                if (sessions.size() > 0 && getLast(sessions).getId().equals(id)) {
+                if (!sessions.isEmpty() && getLast(sessions).getId().equals(id)) {
                     session = getLast(sessions);
                 } else {
                     MapSession delegate = new MapSession(id);
