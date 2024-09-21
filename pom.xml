@@ -23,20 +23,6 @@
         </dependencies>
     </dependencyManagement>
 
-<!--    <repositories>-->
-<!--        <repository>-->
-<!--            <id>central</id>-->
-<!--            <name>Maven Central Repository</name>-->
-<!--            <url>https://repo.maven.apache.org/maven2/</url>-->
-<!--        </repository>-->
-
-<!--        <repository>-->
-<!--            <id>di-release</id>-->
-<!--            <name>di-nexus-repo</name>-->
-<!--            <url>https://nexus-repo.data-infra.shopee.io/repository/maven-public/</url>-->
-<!--        </repository>-->
-<!--    </repositories>-->
-
     <dependencies>
 
         <!-- starter-web：spring-webmvc + autoconfigure + logback + yaml + tomcat -->
@@ -218,5 +204,6 @@
             </plugin>
         </plugins>
     </build>
+
 
 </project>
