@@ -55,22 +55,22 @@ public class JobAdminConfig implements InitializingBean, DisposableBean {
     // ---------------------- XxlJobScheduler ----------------------
 
     // conf
-    @Value("${xxl.job.i18n}")
+    @Value("${gscheduler.i18n}")
     private String i18n;
 
-    @Value("${xxl.job.accessToken}")
+    @Value("${gscheduler.accessToken}")
     private String accessToken;
 
     @Value("${spring.mail.from}")
     private String emailFrom;
 
-    @Value("${xxl.job.triggerpool.fast.max}")
+    @Value("${gscheduler.triggerpool.fast.max}")
     private int triggerPoolFastMax;
 
-    @Value("${xxl.job.triggerpool.slow.max}")
+    @Value("${gscheduler.triggerpool.slow.max}")
     private int triggerPoolSlowMax;
 
-    @Value("${xxl.job.logretentiondays}")
+    @Value("${gscheduler.logretentiondays}")
     private int logretentiondays;
 
     /**
@@ -79,7 +79,7 @@ public class JobAdminConfig implements InitializingBean, DisposableBean {
     @Value("${spring.profiles.active}")
     private String env;
 
-    @Value("${xxl.job.proxyAddr}")
+    @Value("${gscheduler.proxyAddr}")
     private String proxyAddr;
 
     /**
@@ -117,7 +117,6 @@ public class JobAdminConfig implements InitializingBean, DisposableBean {
      */
     @Value("${server.port}")
     private Integer port;
-    // dao, service
 
     @Value("${server.servlet.context-path}")
     private String contextPath;
