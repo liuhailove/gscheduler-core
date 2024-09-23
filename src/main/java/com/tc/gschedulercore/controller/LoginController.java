@@ -34,9 +34,9 @@ public class LoginController {
     /**
      * cookie唯一标识
      */
-    public static final String LOGIN_IDENTITY_KEY = "XXL_JOB_LOGIN_IDENTITY";
+    public static final String LOGIN_IDENTITY_KEY = "gscheduler_IDENTITY";
 
-    public static final String WEB_SESSION_KEY = "session_xxljob_admin";
+    public static final String WEB_SESSION_KEY = "session_gscheduler_admin";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LoginController.class.getSimpleName());
 

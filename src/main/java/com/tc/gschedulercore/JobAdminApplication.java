@@ -48,51 +48,6 @@ public class JobAdminApplication {
         }
     }
 
-    static {
-        // 代理代码处理
-        String region = System.getenv("REGION");
-        String env = System.getenv("ENV");
-        if (env != null && region != null) {
-            if (env.equalsIgnoreCase("live")) {
-                if (region.equalsIgnoreCase("ph")) {
-                    System.getProperties().setProperty("https.proxyHost", "credit-squid.i.scredit.ph");
-                    System.getProperties().setProperty("https.proxyPort", "10701");
-                } else if (region.equalsIgnoreCase("th")) {
-                    System.getProperties().setProperty("https.proxyHost", "credit-squid.i.scredit.in.th");
-                    System.getProperties().setProperty("https.proxyPort", "3128");
-                } else if (region.equalsIgnoreCase("sg")) {
-                    // no proxy
-                } else if (region.equalsIgnoreCase("id")) {
-                    // NO ENV
-                } else if (region.equalsIgnoreCase("my") || region.equalsIgnoreCase("mylocal")) {
-                    System.getProperties().setProperty("https.proxyHost", "credit-squid.i.scredit.com.my");
-                    System.getProperties().setProperty("https.proxyPort", "3128");
-                } else if (region.equalsIgnoreCase("br")) {
-                    System.getProperties().setProperty("https.proxyHost", "credit-squid.i.scrediario.com.br");
-                    System.getProperties().setProperty("https.proxyPort", "10701");
-                } else if (region.equalsIgnoreCase("vn")) {
-                    System.getProperties().setProperty("https.proxyHost", "credit-squid.i.scredit.vn");
-                    System.getProperties().setProperty("https.proxyPort", "10701");
-                } else if (region.equalsIgnoreCase("tw")) {
-                    System.getProperties().setProperty("https.proxyHost", "ap-sg-1-private-g-credit-seat.squid.sgw.shopee.io");
-                    System.getProperties().setProperty("https.proxyPort", "10701");
-                } else if (region.equalsIgnoreCase("ldn-id")) {
-                    System.getProperties().setProperty("https.proxyHost", "squid.i.lenteradana.co.id");
-                    System.getProperties().setProperty("https.proxyPort", "10701");
-                }
-            }
-            if (!env.equalsIgnoreCase("live")) {
-                System.getProperties().setProperty("https.proxyHost", "credit-squid.i.test.scredit.io");
-                System.getProperties().setProperty("https.proxyPort", "3128");
-            }
-        }
-    }
-
-//    @Bean
-//    MeterRegistryCustomizer<MeterRegistry> configurer(@Value("${server.name}") String applicationName) {
-//        return registry -> registry.config().commonTags("application", applicationName);
-//    }
-
     public static void main(String[] args) {
         SpringApplication.run(JobAdminApplication.class, args);
     }

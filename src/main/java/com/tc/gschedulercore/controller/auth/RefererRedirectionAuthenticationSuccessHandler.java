@@ -42,8 +42,8 @@ public class RefererRedirectionAuthenticationSuccessHandler extends SimpleUrlAut
         }
         jobUser.setAuthToken(JwtUtils.createToken(jobUser.getUsername()));
         // do login
-        request.getSession().setAttribute("session_xxljob_admin", jobUser);
-        response.sendRedirect("/xxl-job-admin/index");
+        request.getSession().setAttribute("session_gscheduler_admin", jobUser);
+        response.sendRedirect("/gscheduler/index");
     }
 
 }

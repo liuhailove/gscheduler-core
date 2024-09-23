@@ -19,7 +19,7 @@ layui.define(["jquery"], function (exports) {
             $.ajax({
                 type: "POST",
                 async: false,
-                url: "/xxl-job-admin/check",
+                url: "/gscheduler/check",
                 dataType: "json",
                 success: function (data) {
                     if (data.code === 200) {

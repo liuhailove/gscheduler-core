@@ -40,7 +40,7 @@ public final class CookieClearingLogoutHandler implements LogoutHandler {
         }
         CookieUtil.remove(httpServletRequest, httpServletResponse, "/",LOGIN_IDENTITY_KEY);
         CookieUtil.remove(httpServletRequest, httpServletResponse, "/","JSESSIONID");
-        CookieUtil.remove(httpServletRequest, httpServletResponse, "/xxl-job-admin",LOGIN_IDENTITY_KEY);
-        CookieUtil.remove(httpServletRequest, httpServletResponse, "/xxl-job-admin","JSESSIONID");
+        CookieUtil.remove(httpServletRequest, httpServletResponse, "/gscheduler",LOGIN_IDENTITY_KEY);
+        CookieUtil.remove(httpServletRequest, httpServletResponse, "/gscheduler","JSESSIONID");
     }
 }
